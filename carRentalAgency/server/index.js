@@ -86,6 +86,9 @@ const bookingSchema = new mongoose.Schema(
     selfDriveHours: { type: String, default: '' },
     selfDriveKm: { type: String, default: '' },
     finalAmount: { type: Number, default: null },
+    paymentOption: { type: String, enum: ['full', 'advance'], default: 'full' },
+    paidAmount: { type: Number, default: null },
+    remainingAmount: { type: Number, default: null },
     billedKm: { type: Number, default: null },
     paymentStatus: {
       type: String,
