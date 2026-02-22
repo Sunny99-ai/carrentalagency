@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import SectionHeader from '../components/SectionHeader'
 import Seo from '../components/Seo'
 import { saveBooking } from '../services/bookingsApi'
+import upiQrImage from '../assets/6114191099447413884.jpg'
 
 const setCookie = (name, value, maxAgeSeconds = 60 * 60 * 24 * 7) => {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; samesite=lax`
@@ -158,7 +159,7 @@ function PaymentPage() {
           ) : null}
 
           <img
-            src="/upi-qr-placeholder.svg"
+            src={upiQrImage}
             alt="UPI QR placeholder"
             className="mt-5 w-full rounded-xl border border-slate-200 bg-white p-4"
           />
