@@ -23,10 +23,9 @@ const initialForm = {
   paymentOption: 'full',
 }
 
-const FIRST_24H_RATE = 2000
-const FIRST_24H_KM_LIMIT = 400
-const EXTRA_KM_RATE = 5
 const EXTRA_HOUR_RATE = 150
+const EXTRA_KM_RATE = 5
+const SEVEN_SEATER_ADDON = 500
 
 const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0
 const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -37,48 +36,58 @@ const WAITING_DAY_RATE = 1500
 const FREE_KM_LIMIT = 400
 const EXTRA_KM_RATE = 5
 
-function calculateSelfDrivePrice(totalHours, totalDistanceKm) {
-  const safeHours = Number(totalHours)
-  const safeDistanceKm = Number(totalDistanceKm)
+function calculateSelfDrivePrice(totalHours, totalDistanceKm, carType) {
+  const hours = Number(totalHours)
+  const distance = Number(totalDistanceKm)
 
-  if (!Number.isFinite(safeHours) || !Number.isFinite(safeDistanceKm) || safeHours <= 0 || safeDistanceKm < 0) {
-    return {
-      rentalDays: 0,
-      baseFare: 0,
-      freeKmLimit: FREE_KM_LIMIT,
-      extraKm: 0,
-      extraCharge: 0,
-      finalAmount: 0,
-    }
+  if (!Number.isFinite(hours) || !Number.isFinite(distance) || hours <= 0 || distance < 0) {
+    return null
   }
 
-  const rentalDays = Math.ceil(safeHours / 24)
-  const baseFare =
-    rentalDays === 1 ? FIRST_DAY_RATE : FIRST_DAY_RATE + (rentalDays - 1) * WAITING_DAY_RATE
-  const freeKmLimit = FREE_KM_LIMIT
-  const extraKm = Math.max(0, safeDistanceKm - freeKmLimit)
-  const extraCharge = extraKm * EXTRA_KM_RATE
-  const finalAmount = baseFare + extraCharge
+  // Base plan selection
+  let baseHours = 0
+  let baseKm = 0
+  let basePrice = 0
 
-  return { rentalDays, baseFare, freeKmLimit, extraKm, extraCharge, finalAmount }
+  if (hours <= 12) {
+    baseHours = 12
+    baseKm = 100
+    basePrice = 1000
+  } else if (hours <= 24 && distance <= 300) {
+    baseHours = 24
+    baseKm = 300
+    basePrice = 2000
+  } else {
+    baseHours = 24
+    baseKm = 400
+    basePrice = 2500
+  }
+
+  // Extra hour calculation (NO DAY ROUNDING)
+  const extraHours = Math.max(0, hours - baseHours)
+  const extraHourCharge = extraHours * EXTRA_HOUR_RATE
+
+  // Extra KM calculation
+  const extraKm = Math.max(0, distance - baseKm)
+  const extraKmCharge = extraKm * EXTRA_KM_RATE
+
+  const sevenSeaterCharge = carType === '7 Seater' ? SEVEN_SEATER_ADDON : 0
+
+  const finalAmount =
+    basePrice + extraHourCharge + extraKmCharge + sevenSeaterCharge
+
+  return {
+    basePrice,
+    baseHours,
+    baseKm,
+    extraHours,
+    extraHourCharge,
+    extraKm,
+    extraKmCharge,
+    sevenSeaterCharge,
+    finalAmount,
+  }
 }
-
-const getLocalDateString = (dateObj = new Date()) => {
-  const year = dateObj.getFullYear()
-  const month = pad(dateObj.getMonth() + 1)
-  const day = pad(dateObj.getDate())
-  return `${year}-${month}-${day}`
-}
-
-const toMinutesFrom12Hour = (hour, minute, period) => {
-  const hourNumber = Number(hour)
-  const minuteNumber = Number(minute)
-  if (!hourNumber || Number.isNaN(minuteNumber)) return null
-  let h24 = hourNumber % 12
-  if (period === 'PM') h24 += 12
-  return h24 * 60 + minuteNumber
-}
-
 function BookingPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
