@@ -13,6 +13,19 @@ function updateArrayItem(list, index, key, value) {
   return list.map((item, i) => (i === index ? { ...item, [key]: value } : item))
 }
 
+function getCookie(name) {
+  const prefix = `${name}=`
+  const found = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+  return found ? decodeURIComponent(found.slice(prefix.length)) : ''
+}
+
+function setCookie(name, value, maxAgeSeconds = 60 * 60 * 24 * 7) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; samesite=lax`
+}
+
 function PaymentScreenshotCell({ url }) {
   if (!url) return <span>-</span>
 
@@ -36,6 +49,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [bookingNotification, setBookingNotification] = useState('')
 
   const loadData = async () => {
     setLoading(true)
@@ -44,6 +58,19 @@ export default function App() {
       const [bookingsData, pricingData] = await Promise.all([api('/bookings'), api('/pricing')])
       setBookings(bookingsData)
       setPricing(pricingData)
+
+      const latestBookingId = String(bookingsData?.[0]?._id || bookingsData?.[0]?.id || '')
+      if (latestBookingId) {
+        const cookieName = 'adminLastSeenBookingId'
+        const lastSeenBookingId = getCookie(cookieName)
+        if (!lastSeenBookingId) {
+          setCookie(cookieName, latestBookingId)
+        } else if (lastSeenBookingId !== latestBookingId) {
+          setBookingNotification('You got a booking.')
+          setCookie(cookieName, latestBookingId)
+          setTimeout(() => setBookingNotification(''), 4500)
+        }
+      }
     } catch (err) {
       setMessage(err.message)
     } finally {
@@ -53,6 +80,10 @@ export default function App() {
 
   useEffect(() => {
     loadData()
+    const interval = window.setInterval(() => {
+      loadData()
+    }, 15000)
+    return () => window.clearInterval(interval)
   }, [])
 
   const bookingCount = useMemo(() => bookings.length, [bookings])
@@ -112,6 +143,11 @@ export default function App() {
       {message ? (
         <div className="card">
           <strong>{message}</strong>
+        </div>
+      ) : null}
+      {bookingNotification ? (
+        <div className="card" style={{ borderColor: '#86efac', background: '#f0fdf4' }}>
+          <strong style={{ color: '#166534' }}>{bookingNotification}</strong>
         </div>
       ) : null}
 
