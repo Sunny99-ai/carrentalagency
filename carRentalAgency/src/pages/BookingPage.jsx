@@ -23,6 +23,11 @@ const initialForm = {
   paymentOption: 'full',
 }
 
+const FIRST_24H_RATE = 2000
+const FIRST_24H_KM_LIMIT = 400
+const EXTRA_KM_RATE = 5
+const EXTRA_HOUR_RATE = 150
+
 const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0
 const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 const outstationSevenSeaterAddOn = 500
@@ -197,53 +202,46 @@ function BookingPage() {
     if (formData.tripType === 'Self Drive') {
       const enteredHours = parseNumber(formData.selfDriveHours)
       const enteredKm = parseNumber(formData.selfDriveKm)
-      if (!enteredHours || !enteredKm) return null
+      ifcalculateSelfDrivePrice(totalHours, totalDistanceKm) {
+  const hours = Number(totalHours)
+  const km = Number(totalDistanceKm)
 
-      const tripPrice = calculateSelfDrivePrice(totalHours, totalDistanceKm) {
-  const safeHours = Number(totalHours)
-  const safeDistanceKm = Number(totalDistanceKm)
-
-  if (
-    !Number.isFinite(safeHours) ||
-    !Number.isFinite(safeDistanceKm) ||
-    safeHours <= 0 ||
-    safeDistanceKm < 0
-  ) {
+  if (!Number.isFinite(hours) || !Number.isFinite(km) || hours <= 0 || km < 0) {
     return {
       baseFare: 0,
-      waitingCharge: 0,
-      freeKmLimit: FREE_KM_LIMIT,
+      extraHours: 0,
+      extraHourCharge: 0,
       extraKm: 0,
-      extraCharge: 0,
+      extraKmCharge: 0,
       finalAmount: 0,
     }
   }
 
-  let baseFare = FIRST_DAY_RATE
-  let waitingCharge = 0
+  // FIRST 24 HOURS BASE
+  const baseFare = FIRST_24H_RATE
 
-  if (safeHours > 24) {
-    const extraHours = safeHours - 24
-    const waitingRatePerHour = WAITING_DAY_RATE / 24
-    waitingCharge = extraHours * waitingRatePerHour
-  }
+  // EXTRA HOURS AFTER 24
+  const extraHours = hours > 24 ? hours - 24 : 0
+  const extraHourCharge = extraHours * EXTRA_HOUR_RATE
 
-  const freeKmLimit = FREE_KM_LIMIT
-  const extraKm = Math.max(0, safeDistanceKm - freeKmLimit)
-  const extraCharge = extraKm * EXTRA_KM_RATE
+  // KM CALCULATION
+  const freeKmLimit = FIRST_24H_KM_LIMIT
+  const extraKm = km > freeKmLimit ? km - freeKmLimit : 0
+  const extraKmCharge = extraKm * EXTRA_KM_RATE
 
-  const finalAmount = Math.round(baseFare + waitingCharge + extraCharge)
+  const finalAmount = baseFare + extraHourCharge + extraKmCharge
 
   return {
     baseFare,
-    waitingCharge: Math.round(waitingCharge),
-    freeKmLimit,
+    extraHours,
+    extraHourCharge,
     extraKm,
-    extraCharge,
+    extraKmCharge,
     finalAmount,
   }
-      }
+      } (!enteredHours || !enteredKm) return null
 
+      const tripPrice = 
     const typedKm = parseNumber(formData.outstationKm)
     if (matchedLocation) {
       const locationRate = parseNumber(formData.acType === 'A/C' ? matchedLocation.ac : matchedLocation.nonAc)
