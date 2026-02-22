@@ -1,15 +1,70 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import HeroSection from '../components/HeroSection'
 import SectionHeader from '../components/SectionHeader'
 import Seo from '../components/Seo'
+import { getBookingById } from '../services/bookingsApi'
+
+const getCookie = (name) => {
+  const prefix = `${name}=`
+  const found = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+  return found ? decodeURIComponent(found.slice(prefix.length)) : ''
+}
+
+const setCookie = (name, value, maxAgeSeconds = 60 * 60 * 24 * 7) => {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; samesite=lax`
+}
 
 function HomePage() {
+  const [notification, setNotification] = useState('')
+
+  useEffect(() => {
+    let isMounted = true
+    let timer = null
+
+    const checkBookingStatus = async () => {
+      const bookingId = getCookie('latestBookingId')
+      if (!bookingId) return
+      const alreadyShown = getCookie(`bookingNotificationShown_${bookingId}`)
+      if (alreadyShown === 'true') return
+
+      try {
+        const booking = await getBookingById(bookingId)
+        if (!isMounted) return
+        if (booking?.paymentStatus === 'verified') {
+          setNotification('Your booking succeeded.')
+          setCookie(`bookingNotificationShown_${bookingId}`, 'true')
+          timer = window.setTimeout(() => setNotification(''), 4500)
+        }
+      } catch {
+        // Ignore transient fetch errors and retry on next interval tick.
+      }
+    }
+
+    checkBookingStatus()
+    const interval = window.setInterval(checkBookingStatus, 15000)
+
+    return () => {
+      isMounted = false
+      window.clearInterval(interval)
+      if (timer) window.clearTimeout(timer)
+    }
+  }, [])
+
   return (
     <>
       <Seo
         title="SSRK TRAVELS AND SELF DRIVE CARS | Premium Car Rental"
         description="Book premium self-drive and outstation rentals with transparent pricing and clean vehicles."
       />
+      {notification ? (
+        <div className="fixed right-4 top-36 z-[70] max-w-xs rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-lg">
+          {notification}
+        </div>
+      ) : null}
       <HeroSection />
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-6xl">
