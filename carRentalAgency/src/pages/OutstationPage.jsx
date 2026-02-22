@@ -12,6 +12,9 @@ const parseKm = (value) => Number(String(value).replace(/[^0-9]/g, '')) || ''
 function OutstationPage() {
   const navigate = useNavigate()
   const { pricing } = usePricing()
+  const availability = pricing.availability?.outstation
+  const isAvailable = availability?.isAvailable ?? true
+  const carsAvailable = availability?.carsAvailable || ''
   const uniqueKmPricing = Array.from(
     new Map((pricing.outstation?.kmPricing || []).map((item) => [item.km, item])).values(),
   )
@@ -28,7 +31,16 @@ function OutstationPage() {
           title="Destination-wise and KM-based fare chart."
           description="Choose location-based packages or KM-based slabs with transparent rates."
         />
+        {!isAvailable ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center shadow-premium">
+            <p className="text-base font-semibold text-rose-700">
+              sorry vechiels are not available this time, come back after few hours.
+            </p>
+            {carsAvailable ? <p className="mt-2 text-sm text-rose-600">Cars available: {carsAvailable}</p> : null}
+          </div>
+        ) : null}
 
+        {isAvailable ? (
         <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-premium">
           <table className="w-full border-collapse bg-white text-sm">
             <thead className="bg-soft text-left text-xs uppercase tracking-[0.2em] text-slate-500">
@@ -67,7 +79,10 @@ function OutstationPage() {
             </tbody>
           </table>
         </div>
+        ) : null}
 
+        {isAvailable ? (
+        <>
         <h2 className="mt-14 font-display text-3xl text-ink">KM Based Pricing</h2>
         <div className="mt-6 rounded-2xl border border-slate-200 shadow-premium">
           <table className="w-full table-fixed border-collapse bg-white text-xs sm:text-sm">
@@ -105,6 +120,8 @@ function OutstationPage() {
             </tbody>
           </table>
         </div>
+        </>
+        ) : null}
       </div>
     </section>
   )
