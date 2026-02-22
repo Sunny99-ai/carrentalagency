@@ -1,6 +1,6 @@
 function SectionHeader({ overline, title, description }) {
   return (
-    <div className="mx-auto mb-10 max-w-3xl text-center">
+    <div className="mx-auto mb-10 max-w-3xl pt-6 text-center sm:pt-8">
       {overline ? (
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-accent">{overline}</p>
       ) : null}
