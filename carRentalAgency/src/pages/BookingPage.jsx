@@ -175,26 +175,23 @@ function BookingPage() {
         hourLimit: parseHourLimit(plan.duration),
         kmLimit: parseKmLimit(plan.km),
         basePrice: parseNumber(formData.carType === '7 Seater' ? plan.sevenSeaterPrice : plan.fiveSeaterPrice),
-      }))
+      })).sort((a, b) => a.hourLimit - b.hourLimit || a.kmLimit - b.kmLimit)
 
       const extraHourRate = parseNumber(pricing.selfDrive?.extraCharges?.extraHour)
       const extraKmRate = parseNumber(pricing.selfDrive?.extraCharges?.extraKm)
-      const evaluatedPlans = plans.map((plan) => {
-        const extraHours = Math.max(0, enteredHours - plan.hourLimit)
-        const extraKms = Math.max(0, enteredKm - plan.kmLimit)
-        const total = plan.basePrice + extraHours * extraHourRate + extraKms * extraKmRate
-        return { ...plan, extraHours, extraKms, total }
-      })
-
-      const basePlan = evaluatedPlans.sort((a, b) => a.total - b.total)[0]
+      const basePlan = plans.find((plan) => enteredHours <= plan.hourLimit) || plans[plans.length - 1]
+      const extraHours = Math.max(0, enteredHours - basePlan.hourLimit)
+      const extraKms = Math.max(0, enteredKm - basePlan.kmLimit)
+      const total = basePlan.basePrice + extraHours * extraHourRate + extraKms * extraKmRate
 
       return {
-        amount: basePlan.total,
+        amount: total,
         kmUsed: enteredKm,
         breakdown: [
+          'Plan Selection: Hour-based',
           `Base Plan: ${basePlan.title} (Rs ${basePlan.basePrice})`,
-          `Extra Hours: ${basePlan.extraHours} x Rs ${extraHourRate}`,
-          `Extra KM: ${basePlan.extraKms} x Rs ${extraKmRate}`,
+          `Extra Hours: ${extraHours} x Rs ${extraHourRate}`,
+          `Extra KM: ${extraKms} x Rs ${extraKmRate}`,
         ],
       }
     }
