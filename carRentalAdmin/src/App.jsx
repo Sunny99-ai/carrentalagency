@@ -1,6 +1,6 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
-const apiBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api').replace(/\/$/, '')
+const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://carrentalagency-api.onrender.com/api').replace(/\/$/, '')
 
 async function api(path, options) {
   const res = await fetch(`${apiBase}${path}`, options)
@@ -476,3 +476,4 @@ export default function App() {
     </div>
   )
 }
+
