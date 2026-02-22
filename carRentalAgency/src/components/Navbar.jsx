@@ -17,10 +17,14 @@ function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
         <NavLink to="/" className="flex shrink-0 flex-col items-center gap-2">
-          <img src={logo} alt="SSRK logo" className="h-20 w-20 rounded-xl object-cover shadow-premium sm:h-24 sm:w-24" />
-          <span className="max-w-[180px] text-center text-xs font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-sm">
+          <img
+            src={logo}
+            alt="SSRK logo"
+            className="h-28 w-28 rounded-xl object-cover shadow-premium sm:h-32 sm:w-32 lg:h-36 lg:w-36"
+          />
+          <span className="max-w-[260px] text-center text-sm font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-base lg:text-lg">
             SSRK TRAVELS AND SELF DRIVE CARS
           </span>
         </NavLink>
