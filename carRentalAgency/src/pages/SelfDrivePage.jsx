@@ -9,6 +9,9 @@ const extractNumber = (value) => Number(String(value).replace(/[^0-9]/g, '')) ||
 function SelfDrivePage() {
   const navigate = useNavigate()
   const { pricing } = usePricing()
+  const availability = pricing.availability?.selfDrive
+  const isAvailable = availability?.isAvailable ?? true
+  const carsAvailable = availability?.carsAvailable || ''
 
   return (
     <section className="px-4 pb-20 sm:px-6 lg:px-8">
@@ -22,6 +25,15 @@ function SelfDrivePage() {
           title="Transparent plans for 5-seater and 7-seater rentals."
           description="7-seater fare is Rs 500 higher than the corresponding 5-seater plan."
         />
+        {!isAvailable ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center shadow-premium">
+            <p className="text-base font-semibold text-rose-700">
+              sorry vechiels are not available this time, come back after few hours.
+            </p>
+            {carsAvailable ? <p className="mt-2 text-sm text-rose-600">Cars available: {carsAvailable}</p> : null}
+          </div>
+        ) : null}
+        {isAvailable ? (
         <div className="grid gap-6 md:grid-cols-3">
           {pricing.selfDrive?.plans?.map((plan) => (
             <PricingCard
@@ -43,7 +55,9 @@ function SelfDrivePage() {
             />
           ))}
         </div>
+        ) : null}
 
+        {isAvailable ? (
         <div className="mt-10 rounded-2xl border border-slate-200 bg-soft p-6 shadow-premium">
           <h2 className="font-display text-3xl text-ink">Extra Charges</h2>
           <div className="mt-4 grid gap-4 text-sm text-slate-700 sm:grid-cols-2">
@@ -54,6 +68,7 @@ function SelfDrivePage() {
             7 Seater Pricing Rule: {pricing.selfDrive?.sevenSeaterAddOn}
           </p>
         </div>
+        ) : null}
       </div>
     </section>
   )
