@@ -1,5 +1,5 @@
-const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
-const apiBaseUrl = /^https?:\/\//.test(rawBaseUrl) ? rawBaseUrl.replace(/\/$/, '') : 'http://localhost:4000/api'
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://carrentalagency-api.onrender.com/api'
+const apiBaseUrl = /^https?:\/\//.test(rawBaseUrl) ? rawBaseUrl.replace(/\/$/, '') : 'https://carrentalagency-api.onrender.com/api'
 
 if (import.meta.env.DEV) {
   // eslint-disable-next-line no-console
@@ -34,3 +34,4 @@ export function uploadPaymentScreenshot(bookingId, paymentScreenshotDataUrl) {
     body: JSON.stringify({ paymentScreenshotDataUrl }),
   })
 }
+
