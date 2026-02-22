@@ -49,7 +49,7 @@ function calculateSelfDrivePrice(totalHours, totalDistanceKm, carType) {
   let baseKm = 0
   let basePrice = 0
 
-  if (hours <= 12) {
+  if (hours <= 12 && distance <=100) {
     baseHours = 12
     baseKm = 100
     basePrice = 1000
