@@ -89,7 +89,7 @@ const bookingSchema = new mongoose.Schema(
     billedKm: { type: Number, default: null },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'under_verification', 'verified'],
+      enum: ['pending', 'under_verification', 'verified', 'failed'],
       default: 'pending',
     },
     paymentScreenshotUrl: { type: String, default: '' },
@@ -106,7 +106,7 @@ const paymentProofSchema = new mongoose.Schema(
     paymentScreenshotPublicId: { type: String, default: '' },
     paymentStatus: {
       type: String,
-      enum: ['under_verification', 'verified'],
+      enum: ['under_verification', 'verified', 'failed'],
       default: 'under_verification',
     },
   },
@@ -148,6 +148,25 @@ async function loadDefaultPricing() {
   }
 }
 
+function withAvailability(pricingData) {
+  const current = pricingData || {}
+  const currentAvailability = current.availability || {}
+
+  return {
+    ...current,
+    availability: {
+      selfDrive: {
+        isAvailable: currentAvailability.selfDrive?.isAvailable ?? true,
+        carsAvailable: currentAvailability.selfDrive?.carsAvailable ?? '',
+      },
+      outstation: {
+        isAvailable: currentAvailability.outstation?.isAvailable ?? true,
+        carsAvailable: currentAvailability.outstation?.carsAvailable ?? '',
+      },
+    },
+  }
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true })
 })
@@ -167,11 +186,11 @@ app.get('/api/pricing', async (req, res) => {
     if (!pricingDoc) {
       const seeded = await Pricing.create({
         key: 'main',
-        data: await loadDefaultPricing(),
+        data: withAvailability(await loadDefaultPricing()),
       })
       return res.json(seeded.data)
     }
-    return res.json(pricingDoc.data)
+    return res.json(withAvailability(pricingDoc.data))
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch pricing', error: error.message })
   }
@@ -179,7 +198,7 @@ app.get('/api/pricing', async (req, res) => {
 
 app.put('/api/pricing', async (req, res) => {
   try {
-    const nextPricing = req.body
+    const nextPricing = withAvailability(req.body)
     if (!nextPricing?.selfDrive || !nextPricing?.outstation) {
       return res.status(400).json({ message: 'Invalid pricing payload' })
     }
@@ -206,6 +225,42 @@ app.get('/api/bookings/:id', async (req, res) => {
     return res.json(booking)
   } catch (error) {
     return res.status(500).json({ message: 'Server error' })
+  }
+})
+
+app.patch('/api/bookings/:id/payment-status', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { paymentStatus } = req.body
+    const allowedStatus = ['verified', 'failed']
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: 'Invalid booking ID' })
+    }
+
+    if (!allowedStatus.includes(paymentStatus)) {
+      return res.status(400).json({ message: 'Invalid payment status' })
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      id,
+      { paymentStatus },
+      { new: true },
+    ).lean()
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: 'Booking not found' })
+    }
+
+    await PaymentProof.findOneAndUpdate(
+      { bookingId: String(id) },
+      { paymentStatus },
+      { sort: { createdAt: -1 } },
+    )
+
+    return res.json(updatedBooking)
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to update payment status', error: error.message })
   }
 })
 
@@ -299,7 +354,7 @@ async function start() {
     if (!pricingDoc) {
       await Pricing.create({
         key: 'main',
-        data: await loadDefaultPricing(),
+        data: withAvailability(await loadDefaultPricing()),
       })
     }
     app.listen(PORT, () => {
