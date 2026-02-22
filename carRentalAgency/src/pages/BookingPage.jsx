@@ -199,23 +199,50 @@ function BookingPage() {
       const enteredKm = parseNumber(formData.selfDriveKm)
       if (!enteredHours || !enteredKm) return null
 
-      const tripPrice = calculateSelfDrivePrice(enteredHours, enteredKm)
-      const sevenSeaterAddOn = formData.carType === '7 Seater' ? 500 : 0
+      const tripPrice = calculateSelfDrivePrice(totalHours, totalDistanceKm) {
+  const safeHours = Number(totalHours)
+  const safeDistanceKm = Number(totalDistanceKm)
 
-      return {
-        amount: tripPrice.finalAmount + sevenSeaterAddOn,
-        kmUsed: enteredKm,
-        breakdown: [
-          `Rental Days: ${tripPrice.rentalDays}`,
-          `First 24 Hours Package: Rs ${FIRST_DAY_RATE} (Includes ${FREE_KM_LIMIT} KM)`,
-          ...(tripPrice.rentalDays > 1
-            ? [`Waiting Charge: ${tripPrice.rentalDays - 1} x Rs ${WAITING_DAY_RATE}`]
-            : []),
-          `Extra KM: ${tripPrice.extraKm} x Rs ${EXTRA_KM_RATE} = Rs ${tripPrice.extraCharge}`,
-          ...(sevenSeaterAddOn ? [`7 Seater Add-On: Rs ${sevenSeaterAddOn}`] : []),
-        ],
-      }
+  if (
+    !Number.isFinite(safeHours) ||
+    !Number.isFinite(safeDistanceKm) ||
+    safeHours <= 0 ||
+    safeDistanceKm < 0
+  ) {
+    return {
+      baseFare: 0,
+      waitingCharge: 0,
+      freeKmLimit: FREE_KM_LIMIT,
+      extraKm: 0,
+      extraCharge: 0,
+      finalAmount: 0,
     }
+  }
+
+  let baseFare = FIRST_DAY_RATE
+  let waitingCharge = 0
+
+  if (safeHours > 24) {
+    const extraHours = safeHours - 24
+    const waitingRatePerHour = WAITING_DAY_RATE / 24
+    waitingCharge = extraHours * waitingRatePerHour
+  }
+
+  const freeKmLimit = FREE_KM_LIMIT
+  const extraKm = Math.max(0, safeDistanceKm - freeKmLimit)
+  const extraCharge = extraKm * EXTRA_KM_RATE
+
+  const finalAmount = Math.round(baseFare + waitingCharge + extraCharge)
+
+  return {
+    baseFare,
+    waitingCharge: Math.round(waitingCharge),
+    freeKmLimit,
+    extraKm,
+    extraCharge,
+    finalAmount,
+  }
+      }
 
     const typedKm = parseNumber(formData.outstationKm)
     if (matchedLocation) {
