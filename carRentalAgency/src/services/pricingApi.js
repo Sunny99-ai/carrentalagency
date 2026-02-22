@@ -1,5 +1,5 @@
-const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
-const apiBaseUrl = /^https?:\/\//.test(rawBaseUrl) ? rawBaseUrl.replace(/\/$/, '') : 'http://localhost:4000/api'
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://carrentalagency-api.onrender.com/api'
+const apiBaseUrl = /^https?:\/\//.test(rawBaseUrl) ? rawBaseUrl.replace(/\/$/, '') : 'https://carrentalagency-api.onrender.com/api'
 
 async function request(path, options) {
   const response = await fetch(`${apiBaseUrl}${path}`, options)
@@ -21,3 +21,4 @@ export function updatePricing(data) {
     body: JSON.stringify(data),
   })
 }
+
