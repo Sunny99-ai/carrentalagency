@@ -4,6 +4,10 @@ import SectionHeader from '../components/SectionHeader'
 import Seo from '../components/Seo'
 import { saveBooking } from '../services/bookingsApi'
 
+const setCookie = (name, value, maxAgeSeconds = 60 * 60 * 24 * 7) => {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; samesite=lax`
+}
+
 function PaymentPage() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -68,7 +72,7 @@ function PaymentPage() {
     try {
       const rawDataUrl = await readFileAsDataUrl(selectedPaymentFile)
       const optimizedDataUrl = await optimizeImageDataUrl(rawDataUrl)
-      await saveBooking({
+      const savedBooking = await saveBooking({
         ...bookingPayload,
         paymentOption,
         paidAmount: amountToPay,
@@ -77,6 +81,11 @@ function PaymentPage() {
         paymentStatus: 'under_verification',
         paymentScreenshotUploadedAt: new Date().toISOString(),
       })
+      const bookingId = savedBooking?._id || savedBooking?.id
+      if (bookingId) {
+        setCookie('latestBookingId', String(bookingId))
+        setCookie(`bookingNotificationShown_${bookingId}`, 'false')
+      }
       setPaymentUploadMessage('Booking and payment screenshot submitted. We will verify and confirm you by contact.')
       setSelectedPaymentFile(null)
       setShowSuccessPopup(true)
