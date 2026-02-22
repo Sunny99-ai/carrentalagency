@@ -1,5 +1,5 @@
 function WhatsAppButton() {
-  const phone = '918247253417'
+  const phone = '919533732579'
   const prefilled = encodeURIComponent('Hello, I would like to book a car rental.')
   const link = `https://wa.me/${phone}?text=${prefilled}`
 
