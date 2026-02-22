@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: #0f172a;
   background: #f8fafc;
@@ -53,6 +53,13 @@ input {
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 8px 10px;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  height: 16px;
+  margin-top: 0;
+  transform: scale(1.15);
 }
 
 button {
