@@ -532,6 +532,12 @@ function BookingPage() {
             </div>
           ) : null}
 
+          {formData.tripType === 'Self Drive' ? (
+            <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              150rs per Hour and 5rs per KM will be billed if crossed Hours
+            </p>
+          ) : null}
+
           {estimatedBill ? (
             <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Payment Option</p>
