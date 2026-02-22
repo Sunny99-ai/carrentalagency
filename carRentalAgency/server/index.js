@@ -11,7 +11,7 @@ dotenv.config({ path: '.env.server.local' })
 dotenv.config()
 
 const app = express()
-const PORT = Number(process.env.SERVER_PORT || 4000)
+const PORT = Number(process.env.PORT || process.env.SERVER_PORT || 4000)
 const MONGO_URI = process.env.MONGODB_URI
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173'
 const __filename = fileURLToPath(import.meta.url)
@@ -44,20 +44,31 @@ if (!allowedOrigins.includes('http://localhost:5173')) allowedOrigins.push('http
 if (!allowedOrigins.includes('http://localhost:5174')) allowedOrigins.push('http://localhost:5174')
 
 const isLocalhostOrigin = (origin) => /^https?:\/\/localhost:\d+$/.test(origin)
+const isVercelOrigin = (origin) => /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)?\.vercel\.app$/i.test(origin)
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true
+  if (allowedOrigins.includes(origin)) return true
+  if (isLocalhostOrigin(origin)) return true
+  if (isVercelOrigin(origin)) return true
+  return false
+}
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (isOriginAllowed(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('CORS origin not allowed'))
+    }
+  },
+  credentials: true,
+}
 
 app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin) || isLocalhostOrigin(origin)) {
-        callback(null, true)
-      } else {
-        callback(new Error('CORS origin not allowed'))
-      }
-    },
-    credentials: true,
-  }),
+  cors(corsOptions),
 )
-app.options(/.*/, cors())
+app.options(/.*/, cors(corsOptions))
 app.use(express.json({ limit: '20mb' }))
 
 const bookingSchema = new mongoose.Schema(
