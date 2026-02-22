@@ -7,7 +7,7 @@ function Layout() {
   return (
     <div className="min-h-screen bg-white text-ink">
       <Navbar />
-      <main className="pt-24">
+      <main className="pt-32 sm:pt-36">
         <Outlet />
       </main>
       <Footer />
