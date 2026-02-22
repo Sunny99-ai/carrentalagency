@@ -20,6 +20,7 @@ const initialForm = {
   carType: '5 Seater',
   acType: 'A/C',
   tripType: 'Self Drive',
+  paymentOption: 'full',
 }
 
 const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0
@@ -553,6 +554,44 @@ function BookingPage() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
+            </div>
+          ) : null}
+
+          {estimatedBill ? (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Payment Option</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label
+                  className={`cursor-pointer rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                    formData.paymentOption === 'full' ? 'border-ink bg-slate-50 text-ink' : 'border-slate-300 text-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentOption"
+                    value="full"
+                    checked={formData.paymentOption === 'full'}
+                    onChange={onChange}
+                    className="mr-2"
+                  />
+                  Pay Full Amount
+                </label>
+                <label
+                  className={`cursor-pointer rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                    formData.paymentOption === 'advance' ? 'border-ink bg-slate-50 text-ink' : 'border-slate-300 text-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentOption"
+                    value="advance"
+                    checked={formData.paymentOption === 'advance'}
+                    onChange={onChange}
+                    className="mr-2"
+                  />
+                  Pay Advance (Rs 500) & Pay Later
+                </label>
+              </div>
             </div>
           ) : null}
           <p className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">

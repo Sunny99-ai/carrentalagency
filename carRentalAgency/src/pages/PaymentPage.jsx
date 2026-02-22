@@ -14,7 +14,7 @@ function PaymentPage() {
   const bookingPayload = location.state?.bookingPayload || null
   const totalAmount = Number(bookingPayload?.finalAmount) || 0
   const advanceAmount = totalAmount ? Math.min(500, totalAmount) : 0
-  const [paymentOption, setPaymentOption] = useState('full')
+  const paymentOption = bookingPayload?.paymentOption || 'full'
   const amountToPay = paymentOption === 'advance' ? advanceAmount : totalAmount
   const remainingAmount = Math.max(0, totalAmount - amountToPay)
   const [selectedPaymentFile, setSelectedPaymentFile] = useState(null)
@@ -142,27 +142,11 @@ function PaymentPage() {
             </p>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => setPaymentOption('full')}
-              className={`rounded-xl border px-4 py-3 text-left transition ${
-                paymentOption === 'full' ? 'border-ink bg-slate-50' : 'border-slate-300 bg-white'
-              }`}
-            >
-              <p className="text-sm font-semibold text-ink">Pay Full Amount</p>
-              <p className="mt-1 text-sm text-slate-600">Rs {totalAmount || 0}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentOption('advance')}
-              className={`rounded-xl border px-4 py-3 text-left transition ${
-                paymentOption === 'advance' ? 'border-ink bg-slate-50' : 'border-slate-300 bg-white'
-              }`}
-            >
-              <p className="text-sm font-semibold text-ink">Pay Advance</p>
-              <p className="mt-1 text-sm text-slate-600">Rs {advanceAmount} now, Rs {remainingAmount} pay later</p>
-            </button>
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Selected Payment Option</p>
+            <p className="mt-2 text-sm font-semibold text-ink">
+              {paymentOption === 'advance' ? 'Pay Advance (Rs 500) & Pay Later' : 'Pay Full Amount'}
+            </p>
           </div>
           {totalAmount ? (
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
