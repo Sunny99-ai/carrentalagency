@@ -27,8 +27,8 @@ const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 
 const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 const outstationSevenSeaterAddOn = 500
 const pad = (value) => String(value).padStart(2, '0')
-const DAILY_RATE = 2000
-const FREE_KM_PER_DAY = 350
+const FIRST_DAY_RATE = 2000
+const FREE_KM_LIMIT = 400
 const EXTRA_KM_RATE = 5
 
 function calculateSelfDrivePrice(totalHours, totalDistanceKm) {
@@ -39,7 +39,7 @@ function calculateSelfDrivePrice(totalHours, totalDistanceKm) {
     return {
       rentalDays: 0,
       baseFare: 0,
-      freeKmLimit: 0,
+      freeKmLimit: FREE_KM_LIMIT,
       extraKm: 0,
       extraCharge: 0,
       finalAmount: 0,
@@ -47,8 +47,8 @@ function calculateSelfDrivePrice(totalHours, totalDistanceKm) {
   }
 
   const rentalDays = Math.ceil(safeHours / 24)
-  const baseFare = rentalDays * DAILY_RATE
-  const freeKmLimit = rentalDays * FREE_KM_PER_DAY
+  const baseFare = FIRST_DAY_RATE
+  const freeKmLimit = FREE_KM_LIMIT
   const extraKm = Math.max(0, safeDistanceKm - freeKmLimit)
   const extraCharge = extraKm * EXTRA_KM_RATE
   const finalAmount = baseFare + extraCharge
@@ -205,8 +205,8 @@ function BookingPage() {
         kmUsed: enteredKm,
         breakdown: [
           `Rental Days: ${tripPrice.rentalDays}`,
-          `Base Fare: Rs ${tripPrice.baseFare} (${tripPrice.rentalDays} x Rs ${DAILY_RATE})`,
-          `Free KM Limit: ${tripPrice.freeKmLimit} KM`,
+          `First 24 Hours Package: Rs ${FIRST_DAY_RATE} (Includes ${FREE_KM_LIMIT} KM)`,
+          'Waiting/delay charges are not included in this estimate.',
           `Extra KM: ${tripPrice.extraKm} x Rs ${EXTRA_KM_RATE} = Rs ${tripPrice.extraCharge}`,
           ...(sevenSeaterAddOn ? [`7 Seater Add-On: Rs ${sevenSeaterAddOn}`] : []),
         ],
