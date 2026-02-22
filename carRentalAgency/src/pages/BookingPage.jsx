@@ -27,44 +27,33 @@ const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 
 const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 const outstationSevenSeaterAddOn = 500
 const pad = (value) => String(value).padStart(2, '0')
+const DAILY_RATE = 2000
+const FREE_KM_PER_DAY = 350
+const EXTRA_KM_RATE = 5
 
-function calculateTripPrice(timeInHours, distanceInKm, extraHours, tripType) {
-  const safeHours = Number.isFinite(Number(timeInHours)) ? Math.max(0, Number(timeInHours)) : 0
-  const safeDistance = Number.isFinite(Number(distanceInKm)) ? Math.max(0, Number(distanceInKm)) : 0
-  const safeExtraHours = Number.isFinite(Number(extraHours)) ? Math.max(0, Number(extraHours)) : 0
-  const safeTripType = String(tripType || '').toLowerCase()
+function calculateSelfDrivePrice(totalHours, totalDistanceKm) {
+  const safeHours = Number(totalHours)
+  const safeDistanceKm = Number(totalDistanceKm)
 
-  if (safeTripType === 'self-drive' && safeDistance >= 700) {
-    return { minPrice: 3500, maxPrice: 4500, isRange: true }
+  if (!Number.isFinite(safeHours) || !Number.isFinite(safeDistanceKm) || safeHours <= 0 || safeDistanceKm < 0) {
+    return {
+      rentalDays: 0,
+      baseFare: 0,
+      freeKmLimit: 0,
+      extraKm: 0,
+      extraCharge: 0,
+      finalAmount: 0,
+    }
   }
 
-  let basePrice = 4000
-  let packageHours = 16
+  const rentalDays = Math.ceil(safeHours / 24)
+  const baseFare = rentalDays * DAILY_RATE
+  const freeKmLimit = rentalDays * FREE_KM_PER_DAY
+  const extraKm = Math.max(0, safeDistanceKm - freeKmLimit)
+  const extraCharge = extraKm * EXTRA_KM_RATE
+  const finalAmount = baseFare + extraCharge
 
-  if (safeHours <= 8 && safeDistance <= 80) {
-    basePrice = 2500
-    packageHours = 8
-  } else if (safeHours <= 12 && safeDistance <= 120) {
-    basePrice = 3500
-    packageHours = 12
-  } else if (safeHours <= 16 && safeDistance <= 160) {
-    basePrice = 4000
-    packageHours = 16
-  }
-
-  const billableExtraHours = safeExtraHours || Math.max(0, safeHours - packageHours)
-  let extraCost = 0
-  if (billableExtraHours > 0) {
-    extraCost = billableExtraHours <= 2 ? billableExtraHours * 150 : billableExtraHours * 100
-  }
-
-  return {
-    finalPrice: basePrice + extraCost,
-    basePrice,
-    billableExtraHours,
-    packageHours,
-    isRange: false,
-  }
+  return { rentalDays, baseFare, freeKmLimit, extraKm, extraCharge, finalAmount }
 }
 
 const getLocalDateString = (dateObj = new Date()) => {
@@ -208,29 +197,17 @@ function BookingPage() {
       const enteredKm = parseNumber(formData.selfDriveKm)
       if (!enteredHours || !enteredKm) return null
 
-      const tripPrice = calculateTripPrice(enteredHours, enteredKm, undefined, 'self-drive')
+      const tripPrice = calculateSelfDrivePrice(enteredHours, enteredKm)
       const sevenSeaterAddOn = formData.carType === '7 Seater' ? 500 : 0
 
-      if (tripPrice.isRange) {
-        return {
-          amount: null,
-          minPrice: tripPrice.minPrice + sevenSeaterAddOn,
-          maxPrice: tripPrice.maxPrice + sevenSeaterAddOn,
-          kmUsed: enteredKm,
-          breakdown: [
-            'Self-drive long trip pricing applied (700+ KM).',
-            `Competitive Range: Rs ${tripPrice.minPrice} - Rs ${tripPrice.maxPrice}`,
-            ...(sevenSeaterAddOn ? [`7 Seater Add-On: Rs ${sevenSeaterAddOn}`] : []),
-          ],
-        }
-      }
-
       return {
-        amount: tripPrice.finalPrice + sevenSeaterAddOn,
+        amount: tripPrice.finalAmount + sevenSeaterAddOn,
         kmUsed: enteredKm,
         breakdown: [
-          `Base Package Price: Rs ${tripPrice.basePrice}`,
-          `Extra Hours: ${tripPrice.billableExtraHours} x Rs ${tripPrice.billableExtraHours <= 2 ? 150 : 100}`,
+          `Rental Days: ${tripPrice.rentalDays}`,
+          `Base Fare: Rs ${tripPrice.baseFare} (${tripPrice.rentalDays} x Rs ${DAILY_RATE})`,
+          `Free KM Limit: ${tripPrice.freeKmLimit} KM`,
+          `Extra KM: ${tripPrice.extraKm} x Rs ${EXTRA_KM_RATE} = Rs ${tripPrice.extraCharge}`,
           ...(sevenSeaterAddOn ? [`7 Seater Add-On: Rs ${sevenSeaterAddOn}`] : []),
         ],
       }
@@ -311,7 +288,7 @@ function BookingPage() {
         state: {
           bookingPayload: {
             ...formData,
-            finalAmount: estimatedBill ? (estimatedBill.amount ?? estimatedBill.minPrice ?? null) : null,
+            finalAmount: estimatedBill ? estimatedBill.amount : null,
             billedKm: estimatedBill ? estimatedBill.kmUsed : null,
           },
         },
@@ -541,13 +518,7 @@ function BookingPage() {
           {estimatedBill ? (
             <div className="mt-6 rounded-xl border border-slate-200 bg-soft p-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Estimated Bill</p>
-              {estimatedBill.amount !== null ? (
-                <p className="mt-2 font-display text-3xl text-ink">Rs {estimatedBill.amount}</p>
-              ) : (
-                <p className="mt-2 font-display text-3xl text-ink">
-                  Rs {estimatedBill.minPrice} - Rs {estimatedBill.maxPrice}
-                </p>
-              )}
+              <p className="mt-2 font-display text-3xl text-ink">Rs {estimatedBill.amount}</p>
               <p className="mt-1 text-sm text-slate-600">Bill KM: {estimatedBill.kmUsed ? `${estimatedBill.kmUsed} KM` : 'N/A'}</p>
               <ul className="mt-2 space-y-1 text-xs text-slate-600">
                 {estimatedBill.breakdown.map((item) => (
