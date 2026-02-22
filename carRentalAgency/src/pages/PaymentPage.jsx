@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import SectionHeader from '../components/SectionHeader'
 import Seo from '../components/Seo'
@@ -8,10 +8,15 @@ function PaymentPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const bookingPayload = location.state?.bookingPayload || null
-  const amount = bookingPayload?.finalAmount || ''
+  const totalAmount = Number(bookingPayload?.finalAmount) || 0
+  const advanceAmount = totalAmount ? Math.min(500, totalAmount) : 0
+  const [paymentOption, setPaymentOption] = useState('full')
+  const amountToPay = paymentOption === 'advance' ? advanceAmount : totalAmount
+  const remainingAmount = Math.max(0, totalAmount - amountToPay)
   const [selectedPaymentFile, setSelectedPaymentFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [paymentUploadMessage, setPaymentUploadMessage] = useState('')
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   const onPaymentFileChange = (event) => {
     const file = event.target.files?.[0] || null
@@ -65,14 +70,17 @@ function PaymentPage() {
       const optimizedDataUrl = await optimizeImageDataUrl(rawDataUrl)
       await saveBooking({
         ...bookingPayload,
+        paymentOption,
+        paidAmount: amountToPay,
+        remainingAmount,
         paymentScreenshotDataUrl: optimizedDataUrl,
         paymentStatus: 'under_verification',
         paymentScreenshotUploadedAt: new Date().toISOString(),
       })
       setPaymentUploadMessage('Booking and payment screenshot submitted. We will verify and confirm you by contact.')
       setSelectedPaymentFile(null)
-      window.alert('Payment screenshot uploaded successfully.')
-      navigate('/')
+      setShowSuccessPopup(true)
+      setTimeout(() => navigate('/'), 1800)
     } catch (error) {
       setPaymentUploadMessage(error.message || 'Failed to upload screenshot. Try a smaller image.')
     } finally {
@@ -125,7 +133,36 @@ function PaymentPage() {
             </p>
           </div>
 
-          {amount ? <p className="mt-4 text-lg font-semibold text-ink">Amount to pay: Rs {amount}</p> : null}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setPaymentOption('full')}
+              className={`rounded-xl border px-4 py-3 text-left transition ${
+                paymentOption === 'full' ? 'border-ink bg-slate-50' : 'border-slate-300 bg-white'
+              }`}
+            >
+              <p className="text-sm font-semibold text-ink">Pay Full Amount</p>
+              <p className="mt-1 text-sm text-slate-600">Rs {totalAmount || 0}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentOption('advance')}
+              className={`rounded-xl border px-4 py-3 text-left transition ${
+                paymentOption === 'advance' ? 'border-ink bg-slate-50' : 'border-slate-300 bg-white'
+              }`}
+            >
+              <p className="text-sm font-semibold text-ink">Pay Advance</p>
+              <p className="mt-1 text-sm text-slate-600">Rs {advanceAmount} now, Rs {remainingAmount} pay later</p>
+            </button>
+          </div>
+          {totalAmount ? (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-lg font-semibold text-ink">Amount to pay now: Rs {amountToPay}</p>
+              {paymentOption === 'advance' ? (
+                <p className="mt-1 text-sm text-slate-600">Remaining amount to pay later: Rs {remainingAmount}</p>
+              ) : null}
+            </div>
+          ) : null}
 
           <img
             src="/upi-qr-placeholder.svg"
@@ -153,6 +190,22 @@ function PaymentPage() {
           {paymentUploadMessage ? <p className="mt-3 text-sm font-semibold text-accent">{paymentUploadMessage}</p> : null}
         </div>
       </div>
+      {showSuccessPopup ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
+          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+            <span className="absolute inset-0 -z-10 rounded-2xl bg-emerald-200/40 blur-xl" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+              <span className="absolute h-16 w-16 animate-ping rounded-full bg-emerald-200/70" />
+              <svg className="relative h-9 w-9 text-emerald-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7L10 17L5 12" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="mt-4 text-base font-semibold text-ink">
+              Success we will verify payment and inform you shortly
+            </p>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }
