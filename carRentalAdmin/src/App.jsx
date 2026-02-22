@@ -85,6 +85,23 @@ export default function App() {
     }
   }
 
+  const updatePaymentStatus = async (bookingId, paymentStatus) => {
+    setMessage('')
+    try {
+      const updated = await api(`/bookings/${bookingId}/payment-status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus }),
+      })
+      setBookings((current) =>
+        current.map((item) => (String(item._id || item.id) === String(bookingId) ? updated : item)),
+      )
+      setMessage(`Payment status updated to ${paymentStatus}.`)
+    } catch (err) {
+      setMessage(err.message)
+    }
+  }
+
   return (
     <div className="app">
       <div className="header">
@@ -120,6 +137,7 @@ export default function App() {
                     <th>Amount</th>
                     <th>Payment</th>
                     <th>Screenshot</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,6 +155,16 @@ export default function App() {
                       <td>{item.paymentStatus || '-'}</td>
                       <td>
                         <PaymentScreenshotCell url={item.paymentScreenshotUrl} />
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'verified')}>
+                            Verify
+                          </button>
+                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'failed')}>
+                            Cancel
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -161,6 +189,7 @@ export default function App() {
                     <th>Amount</th>
                     <th>Payment</th>
                     <th>Screenshot</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,6 +209,16 @@ export default function App() {
                       <td>
                         <PaymentScreenshotCell url={item.paymentScreenshotUrl} />
                       </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'verified')}>
+                            Verify
+                          </button>
+                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'failed')}>
+                            Cancel
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -191,6 +230,101 @@ export default function App() {
 
       {pricing ? (
         <>
+          <div className="card">
+            <h2>Cars Availability</h2>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Available</th>
+                    <th>Cars Available (Optional)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Self Drive</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={pricing.availability?.selfDrive?.isAvailable ?? true}
+                        onChange={(e) =>
+                          setPricing((p) => ({
+                            ...p,
+                            availability: {
+                              ...(p.availability || {}),
+                              selfDrive: {
+                                ...(p.availability?.selfDrive || {}),
+                                isAvailable: e.target.checked,
+                              },
+                            },
+                          }))
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={pricing.availability?.selfDrive?.carsAvailable || ''}
+                        onChange={(e) =>
+                          setPricing((p) => ({
+                            ...p,
+                            availability: {
+                              ...(p.availability || {}),
+                              selfDrive: {
+                                ...(p.availability?.selfDrive || {}),
+                                carsAvailable: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                        placeholder="e.g. 4"
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Outstation</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={pricing.availability?.outstation?.isAvailable ?? true}
+                        onChange={(e) =>
+                          setPricing((p) => ({
+                            ...p,
+                            availability: {
+                              ...(p.availability || {}),
+                              outstation: {
+                                ...(p.availability?.outstation || {}),
+                                isAvailable: e.target.checked,
+                              },
+                            },
+                          }))
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={pricing.availability?.outstation?.carsAvailable || ''}
+                        onChange={(e) =>
+                          setPricing((p) => ({
+                            ...p,
+                            availability: {
+                              ...(p.availability || {}),
+                              outstation: {
+                                ...(p.availability?.outstation || {}),
+                                carsAvailable: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                        placeholder="e.g. 3"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div className="card">
             <h2>Self Drive Plans (Table)</h2>
             <div className="table-wrap">
