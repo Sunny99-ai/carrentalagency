@@ -1,4 +1,4 @@
-﻿{
+{
   "selfDrive": {
     "plans": [
       {
@@ -68,5 +68,15 @@
       { "km": "700 KM", "ac": "Rs 8000", "nonAc": "Rs 7500" },
       { "km": "750 KM", "ac": "Rs 8500", "nonAc": "Rs 8000" }
     ]
+  },
+  "availability": {
+    "selfDrive": {
+      "isAvailable": true,
+      "carsAvailable": ""
+    },
+    "outstation": {
+      "isAvailable": true,
+      "carsAvailable": ""
+    }
   }
 }
