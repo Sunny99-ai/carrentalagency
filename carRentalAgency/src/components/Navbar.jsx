@@ -16,7 +16,7 @@ function Navbar() {
   const closeMobileMenu = () => setIsMobileOpen(false)
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <NavLink to="/" className="flex shrink-0 flex-col items-center gap-2 md:items-start">
           <img
