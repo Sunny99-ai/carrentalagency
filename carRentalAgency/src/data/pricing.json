@@ -1,0 +1,72 @@
+﻿{
+  "selfDrive": {
+    "plans": [
+      {
+        "title": "12 Hours- Up to 100KM",
+        "duration": "12 Hours",
+        "km": "100 KM",
+        "fiveSeaterPrice": "Rs 1000",
+        "sevenSeaterPrice": "Rs 1500"
+      },
+      {
+        "title": "24 Hours- Up to 300KM",
+        "duration": "24 Hours",
+        "km": "300 KM",
+        "fiveSeaterPrice": "Rs 2000",
+        "sevenSeaterPrice": "Rs 2500"
+      },
+      {
+        "title": "24 Hours- Up to 400KM",
+        "duration": "24 Hours",
+        "km": "400 KM",
+        "fiveSeaterPrice": "Rs 2500",
+        "sevenSeaterPrice": "Rs 3000"
+      }
+    ],
+    "extraCharges": {
+      "extraKm": "Rs 5 per extra KM",
+      "extraHour": "Rs 150 per extra hour"
+    },
+    "sevenSeaterAddOn": "Rs 500 extra than 5-seater plan"
+  },
+  "outstation": {
+    "locations": [
+      { "name": "Hanamkonda", "ac": "Rs 1700", "nonAc": "Rs 1600" },
+      { "name": "Eturnagaram", "ac": "Rs 3000", "nonAc": "Rs 2900" },
+      { "name": "Mulugu", "ac": "Rs 1700", "nonAc": "Rs 1600" },
+      { "name": "Suryapet", "ac": "Rs 3500", "nonAc": "Rs 3300" },
+      { "name": "Mahabubabad", "ac": "Rs 1700", "nonAc": "Rs 1600" },
+      { "name": "Kaleshwaram", "ac": "Rs 3500", "nonAc": "Rs 3300" },
+      { "name": "Khammam", "ac": "Rs 3200", "nonAc": "Rs 3000" },
+      { "name": "Medaram", "ac": "Rs 3200", "nonAc": "Rs 3000" },
+      { "name": "Jangaon", "ac": "Rs 3200", "nonAc": "Rs 3000" },
+      { "name": "Kodhada", "ac": "Rs 3500", "nonAc": "Rs 3300" },
+      { "name": "Malluru Mangapet", "ac": "Rs 3500", "nonAc": "Rs 3300" },
+      { "name": "Vijayawada", "ac": "Rs 5500", "nonAc": "Rs 5200" },
+      { "name": "Hyderabad", "ac": "Rs 5000", "nonAc": "Rs 4800" }
+    ],
+    "kmPricing": [
+      { "km": "100 KM", "ac": "Rs 1700", "nonAc": "Rs 1600" },
+      { "km": "130 KM", "ac": "Rs 1800", "nonAc": "Rs 1700" },
+      { "km": "140 KM", "ac": "Rs 1900", "nonAc": "Rs 1800" },
+      { "km": "150 KM", "ac": "Rs 2000", "nonAc": "Rs 1900" },
+      { "km": "160 KM", "ac": "Rs 2200", "nonAc": "Rs 2000" },
+      { "km": "170 KM", "ac": "Rs 2500", "nonAc": "Rs 2400" },
+      { "km": "180 KM", "ac": "Rs 2700", "nonAc": "Rs 2500" },
+      { "km": "190 KM", "ac": "Rs 2800", "nonAc": "Rs 2700" },
+      { "km": "200 KM", "ac": "Rs 3000", "nonAc": "Rs 2800" },
+      { "km": "220 KM", "ac": "Rs 3000", "nonAc": "Rs 2900" },
+      { "km": "250 KM", "ac": "Rs 3300", "nonAc": "Rs 3000" },
+      { "km": "300 KM", "ac": "Rs 3800", "nonAc": "Rs 3500" },
+      { "km": "350 KM", "ac": "Rs 4200", "nonAc": "Rs 4000" },
+      { "km": "400 KM", "ac": "Rs 5000", "nonAc": "Rs 4500" },
+      { "km": "450 KM", "ac": "Rs 5500", "nonAc": "Rs 5000" },
+      { "km": "500 KM", "ac": "Rs 6000", "nonAc": "Rs 5500" },
+      { "km": "550 KM", "ac": "Rs 6500", "nonAc": "Rs 6000" },
+      { "km": "600 KM", "ac": "Rs 7000", "nonAc": "Rs 6500" },
+      { "km": "650 KM", "ac": "Rs 7500", "nonAc": "Rs 7000" },
+      { "km": "700 KM", "ac": "Rs 8000", "nonAc": "Rs 7500" },
+      { "km": "750 KM", "ac": "Rs 8500", "nonAc": "Rs 8000" }
+    ]
+  }
+}

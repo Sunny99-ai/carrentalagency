@@ -1,0 +1,15 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="600" rx="28" fill="#F8FAFC"/>
+  <rect x="80" y="80" width="440" height="440" rx="20" fill="white" stroke="#CBD5E1" stroke-width="14"/>
+  <rect x="124" y="124" width="90" height="90" fill="#0F172A"/>
+  <rect x="386" y="124" width="90" height="90" fill="#0F172A"/>
+  <rect x="124" y="386" width="90" height="90" fill="#0F172A"/>
+  <rect x="252" y="252" width="32" height="32" fill="#334155"/>
+  <rect x="284" y="220" width="32" height="32" fill="#334155"/>
+  <rect x="316" y="284" width="32" height="32" fill="#334155"/>
+  <rect x="348" y="252" width="32" height="32" fill="#334155"/>
+  <rect x="252" y="316" width="32" height="32" fill="#334155"/>
+  <text x="300" y="560" text-anchor="middle" fill="#334155" font-family="Arial, sans-serif" font-size="30" font-weight="700">
+    UPI QR Placeholder
+  </text>
+</svg>
