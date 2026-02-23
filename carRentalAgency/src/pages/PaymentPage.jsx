@@ -154,6 +154,7 @@ function PaymentPage() {
               <>
                 <p className="mt-1 text-sm text-slate-700">Drop Location: {bookingPayload.dropLocation || '-'}</p>
                 <p className="mt-1 text-sm text-slate-700">KM: {bookingPayload.outstationKm || bookingPayload.billedKm || '-'}</p>
+                <p className="mt-1 text-sm text-slate-700">Days: {bookingPayload.outstationDays || '-'}</p>
               </>
             )}
             <p className="mt-3 text-sm font-semibold text-slate-700">
