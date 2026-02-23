@@ -60,7 +60,7 @@ function Navbar() {
             className={`max-w-[360px] text-center font-extrabold uppercase leading-tight transition-all duration-300 md:text-left ${
               isCompact ? 'text-lg sm:text-xl lg:text-2xl' : 'text-2xl sm:text-3xl lg:text-3xl'
             }`}
-            style={{ fontFamily: '"Cinzel", "Sora", "Manrope", sans-serif', letterSpacing: '0.08em' }}
+            style={{ fontFamily: '"Outfit", "Sora", "Manrope", sans-serif', letterSpacing: '0.08em' }}
           >
             <span className="inline-flex items-center gap-2">
               <img
