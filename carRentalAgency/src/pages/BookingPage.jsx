@@ -27,6 +27,30 @@ const initialForm = {
 const SEVEN_SEATER_ADDON = 500
 const OUTSTATION_EXTRA_DAY_RATE = 1500
 const EXTRA_KM_RATE = 5
+const SELF_DRIVE_PICKUP_CHARGES = new Map([
+  ['khanapuronsite', 0],
+  ['khanapur', 0],
+  ['ragampet', 0],
+  ['kothur', 0],
+  ['rangapur', 100],
+  ['narsampet', 0],
+  ['gudur', 200],
+  ['budharaopet', 0],
+  ['ashokhnagar', 100],
+  ['kothagudam', 200],
+  ['sarwapur', 0],
+  ['chennaraopet', 200],
+  ['girnibavi', 200],
+  ['laknepally', 200],
+  ['maheshwaram', 200],
+  ['bitscollege', 200],
+  ['jayamukhicollege', 200],
+  ['bhupathipet', 200],
+  ['ainepally', 0],
+  ['mangalavaripet', 100],
+  ['peddammagadda', 100],
+  ['manubothulagadda', 100],
+])
 const SELF_DRIVE_RATE_CHART = {
   12: [
     { km: 100, price: 1000 },
@@ -194,6 +218,12 @@ function getOutstationFirstDayBaseFare(distanceKm) {
   if (distanceKm <= 500) return 2000
   if (distanceKm <= 600) return 2300
   return 2500
+}
+
+function getSelfDrivePickupCharge(pickupLocation) {
+  const key = normalize(pickupLocation || '')
+  if (!key) return 0
+  return SELF_DRIVE_PICKUP_CHARGES.get(key) ?? 0
 }
 
 function getLocalDateString() {
@@ -431,8 +461,9 @@ function BookingPage() {
       if (!selfDrive) return null
 
       const sevenSeaterCharge = formData.carType === '7 Seater' ? SEVEN_SEATER_ADDON : 0
+      const pickupCharge = getSelfDrivePickupCharge(formData.pickupLocation)
       return {
-        amount: selfDrive.finalAmount + sevenSeaterCharge,
+        amount: selfDrive.finalAmount + sevenSeaterCharge + pickupCharge,
         kmUsed: enteredKm,
         breakdown: [
           `Rental Days (24h blocks): ${selfDrive.rentalDays}`,
@@ -443,6 +474,7 @@ function BookingPage() {
           `Free KM Limit: ${selfDrive.freeKmLimit} KM`,
           `Extra KM: ${selfDrive.extraKm} KM`,
           `Extra KM Charge: Rs ${selfDrive.extraCharge}`,
+          `Pickup Charges: Rs ${pickupCharge}`,
           ...(sevenSeaterCharge ? [`7 Seater Add-On: Rs ${sevenSeaterCharge}`] : []),
         ],
       }
