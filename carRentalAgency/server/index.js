@@ -83,6 +83,7 @@ const bookingSchema = new mongoose.Schema(
     carType: { type: String, enum: ['5 Seater', '7 Seater'], required: true },
     acType: { type: String, enum: ['A/C', 'Non A/C'], default: 'A/C' },
     outstationKm: { type: String, default: '' },
+    outstationDays: { type: String, default: '' },
     selfDriveHours: { type: String, default: '' },
     selfDriveKm: { type: String, default: '' },
     finalAmount: { type: Number, default: null },
