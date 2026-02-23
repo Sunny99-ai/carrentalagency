@@ -48,17 +48,17 @@ function Navbar() {
             }`}
           />
           <span
-            className={`max-w-[320px] text-center font-semibold leading-tight tracking-[0.08em] text-slate-700 transition-all duration-300 md:text-left ${
-              isCompact ? 'text-base sm:text-lg lg:text-xl' : 'text-lg sm:text-xl lg:text-2xl'
+            className={`max-w-[360px] text-center font-brand font-extrabold uppercase leading-tight text-slate-800 transition-all duration-300 md:text-left ${
+              isCompact ? 'text-lg sm:text-xl lg:text-2xl' : 'text-2xl sm:text-3xl lg:text-3xl'
             }`}
           >
-            <span className="inline-flex items-center gap-2">
+            <span className="animate-title-formation inline-flex items-center gap-2">
               <img
                 src={stamp}
                 alt=""
                 aria-hidden="true"
                 className={`shrink-0 object-contain transition-all duration-300 ${
-                  isCompact ? 'h-[2.4em] w-[2.4em]' : 'h-[3.2em] w-[3.2em]'
+                  isCompact ? 'h-[2.2em] w-[2.2em]' : 'h-[2.3em] w-[2.3em]'
                 }`}
               />
               <span>SSRK TRAVELS AND SELF DRIVE CARS</span>
@@ -67,7 +67,7 @@ function Navbar() {
                 alt=""
                 aria-hidden="true"
                 className={`shrink-0 object-contain transition-all duration-300 ${
-                  isCompact ? 'h-[2.4em] w-[2.4em]' : 'h-[3.2em] w-[3.2em]'
+                  isCompact ? 'h-[2.2em] w-[2.2em]' : 'h-[2.3em] w-[2.3em]'
                 }`}
               />
             </span>
