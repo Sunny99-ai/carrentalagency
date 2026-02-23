@@ -675,7 +675,9 @@ function BookingPage() {
                   className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
                 >
                   <option value="">Select Pickup Location</option>
-                  {SELF_DRIVE_PICKUP_LOCATIONS.map((location) => (
+                  {[...SELF_DRIVE_PICKUP_LOCATIONS]
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((location) => (
                     <option key={location.label} value={location.label}>
                       {location.label} (Pickup Charge: Rs {location.charge})
                     </option>
