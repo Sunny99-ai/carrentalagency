@@ -9,6 +9,7 @@ const links = [
   { label: 'Booking', to: '/booking' },
   { label: 'Contact', to: '/contact' },
 ]
+const titleWords = ['SSRK', 'TRAVELS', 'AND', 'SELF', 'DRIVE', 'CARS']
 
 function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -56,11 +57,11 @@ function Navbar() {
             }`}
           />
           <span
-            className={`max-w-[360px] text-center font-brand font-extrabold uppercase leading-tight text-slate-800 transition-all duration-300 md:text-left ${
+            className={`header-title-premium max-w-[360px] text-center font-extrabold uppercase leading-tight transition-all duration-300 md:text-left ${
               isCompact ? 'text-lg sm:text-xl lg:text-2xl' : 'text-2xl sm:text-3xl lg:text-3xl'
             }`}
           >
-            <span className={`${playTitleAnimation ? 'animate-title-formation' : 'opacity-0'} inline-flex items-center gap-2`}>
+            <span className="inline-flex items-center gap-2">
               <img
                 src={stamp}
                 alt=""
@@ -69,7 +70,17 @@ function Navbar() {
                   isCompact ? 'h-[2.2em] w-[2.2em]' : 'h-[2.3em] w-[2.3em]'
                 }`}
               />
-              <span>SSRK TRAVELS AND SELF DRIVE CARS</span>
+              <span className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 md:justify-start">
+                {titleWords.map((word, index) => (
+                  <span
+                    key={word}
+                    className={playTitleAnimation ? 'title-word title-word-enter' : 'title-word'}
+                    style={{ animationDelay: `${index * 90}ms` }}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </span>
               <img
                 src={stamp}
                 alt=""
