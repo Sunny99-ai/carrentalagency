@@ -755,6 +755,8 @@ function BookingPage() {
                     type="number"
                     value={formData.outstationKm}
                     onChange={onChange}
+                    disabled={Boolean(matchedLocation)}
+                    placeholder={matchedLocation ? 'KM auto from location pricing' : ''}
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
                   />
                 </label>
