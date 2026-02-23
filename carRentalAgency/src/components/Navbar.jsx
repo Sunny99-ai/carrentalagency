@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import logo from '../assets/new-logo.png'
 import stamp from '../assets/stamp.png'
 
 const links = [
@@ -21,7 +20,7 @@ function Navbar() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <NavLink to="/" className="flex shrink-0 flex-col items-center gap-2 md:items-start">
           <img
-            src={logo}
+            src="/new-logo.png"
             alt="SSRK logo"
             className="h-28 w-28 rounded-xl object-cover shadow-premium sm:h-32 sm:w-32 lg:h-36 lg:w-36"
           />
