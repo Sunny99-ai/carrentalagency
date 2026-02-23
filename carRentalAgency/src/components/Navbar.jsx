@@ -22,7 +22,7 @@ function Navbar() {
           <img
             src="/new-logo.png"
             alt="SSRK logo"
-            className="h-29 w-35 rounded-xl object-cover shadow-premium sm:h-22 sm:w-22 lg:h-26 lg:w-26"
+            className="h-28 w-28 rounded-xl object-cover shadow-premium sm:h-32 sm:w-32 md:h-20 md:w-20 lg:h-24 lg:w-24"
           />
           <span className="max-w-[320px] text-center text-lg font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-xl md:text-left lg:text-2xl">
             <span className="inline-flex items-center gap-2">
