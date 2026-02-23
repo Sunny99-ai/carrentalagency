@@ -761,18 +761,6 @@ function BookingPage() {
                   />
                 </label>
                 <label className="text-sm font-semibold text-slate-600">
-                  Number of Days (Optional)
-                  <input
-                    min="1"
-                    name="outstationDays"
-                    type="number"
-                    value={formData.outstationDays}
-                    onChange={onChange}
-                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
-                    placeholder="Ex: 3"
-                  />
-                </label>
-                <label className="text-sm font-semibold text-slate-600">
                   Car Type
                   <select
                     name="carType"
