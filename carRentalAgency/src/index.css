@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=Playfair+Display:wght@600;700&family=Sora:wght@600;700;800&display=swap');
 
+@font-face {
+  font-family: 'Mileast Regular';
+  src:
+    local('Mileast Regular'),
+    local('Mileast-Regular'),
+    url('/fonts/Mileast-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -88,4 +99,15 @@ body {
 
 .header-title-premium .title-word-enter {
   animation: title-word-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-color-scheme: dark) {
+  .navbar-title-word {
+    background-image: none !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow:
+      0 0 8px rgba(255, 255, 255, 0.35),
+      0 0 18px rgba(255, 255, 255, 0.2);
+  }
 }
