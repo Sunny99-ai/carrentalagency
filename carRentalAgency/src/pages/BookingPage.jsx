@@ -15,6 +15,7 @@ const initialForm = {
   timeMinute: '',
   timePeriod: 'AM',
   outstationKm: '',
+  outstationDays: '',
   selfDriveHours: '',
   selfDriveKm: '',
   carType: '5 Seater',
@@ -24,6 +25,7 @@ const initialForm = {
 }
 
 const SEVEN_SEATER_ADDON = 500
+const OUTSTATION_EXTRA_DAY_RATE = 1500
 const EXTRA_KM_RATE = 5
 const SELF_DRIVE_RATE_CHART = {
   12: [
@@ -186,6 +188,14 @@ const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, ''
 const outstationSevenSeaterAddOn = 500
 const pad = (value) => String(value).padStart(2, '0')
 
+function getOutstationFirstDayBaseFare(distanceKm) {
+  if (!Number.isFinite(distanceKm) || distanceKm <= 0) return null
+  if (distanceKm <= 200) return 1800
+  if (distanceKm <= 500) return 2000
+  if (distanceKm <= 600) return 2300
+  return 2500
+}
+
 function getLocalDateString() {
   const now = new Date()
   const offsetMs = now.getTimezoneOffset() * 60 * 1000
@@ -306,6 +316,7 @@ function BookingPage() {
       tripType,
       dropLocation: searchParams.get('dropLocation') || '',
       outstationKm: searchParams.get('outstationKm') || '',
+      outstationDays: searchParams.get('outstationDays') || '',
       selfDriveHours: searchParams.get('selfDriveHours') || '',
       selfDriveKm: searchParams.get('selfDriveKm') || '',
       carType: searchParams.get('carType') || initialForm.carType,
@@ -319,6 +330,7 @@ function BookingPage() {
         searchParams.get('tripType') ||
           searchParams.get('dropLocation') ||
           searchParams.get('outstationKm') ||
+          searchParams.get('outstationDays') ||
           searchParams.get('selfDriveHours') ||
           searchParams.get('selfDriveKm'),
       ),
@@ -437,6 +449,24 @@ function BookingPage() {
     }
 
     const typedKm = parseNumber(formData.outstationKm)
+    const enteredOutstationDays = Math.floor(parseNumber(formData.outstationDays))
+    if (enteredOutstationDays > 0) {
+      const firstDayFare = getOutstationFirstDayBaseFare(typedKm)
+      if (!firstDayFare) return null
+      const extraDays = Math.max(0, enteredOutstationDays - 1)
+      const extraDaysFare = extraDays * OUTSTATION_EXTRA_DAY_RATE
+      return {
+        amount: firstDayFare + extraDaysFare + outstationSurcharge,
+        kmUsed: typedKm,
+        breakdown: [
+          `Outstation Days: ${enteredOutstationDays}`,
+          `1st Day Fare (${typedKm} KM): Rs ${firstDayFare}`,
+          `Additional Days (${extraDays} x Rs ${OUTSTATION_EXTRA_DAY_RATE}): Rs ${extraDaysFare}`,
+          ...(outstationSurcharge ? [`7 Seater Add-On: Rs ${outstationSurcharge}`] : []),
+        ],
+      }
+    }
+
     if (matchedLocation) {
       const locationRate = parseNumber(formData.acType === 'A/C' ? matchedLocation.ac : matchedLocation.nonAc)
       if (locationRate) {
@@ -479,6 +509,9 @@ function BookingPage() {
     }
 
     if (!formData.dropLocation || !formData.acType || !formData.carType) return false
+    if (Math.floor(parseNumber(formData.outstationDays)) > 0) {
+      return parseNumber(formData.outstationKm) > 0
+    }
     if (matchedLocation && parseNumber(formData.acType === 'A/C' ? matchedLocation.ac : matchedLocation.nonAc)) {
       return true
     }
@@ -723,6 +756,18 @@ function BookingPage() {
                     value={formData.outstationKm}
                     onChange={onChange}
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-slate-600">
+                  Number of Days (Optional)
+                  <input
+                    min="1"
+                    name="outstationDays"
+                    type="number"
+                    value={formData.outstationDays}
+                    onChange={onChange}
+                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
+                    placeholder="Ex: 3"
                   />
                 </label>
                 <label className="text-sm font-semibold text-slate-600">
