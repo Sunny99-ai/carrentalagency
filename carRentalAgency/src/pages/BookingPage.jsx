@@ -741,9 +741,14 @@ function BookingPage() {
 
           {formData.tripType === 'Self Drive' ? (
             <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-              Select 12/24/36/48/60/72/90 hour package. Self-drive price is calculated only from the fixed KM rate chart.
+              A rate of five rupees per kilometer will be applied for distances exceeding the selected kilometers.
+              A charge of 150 rupees per hour will be incurred for durations extending beyond the allotted hours.
             </p>
           ) : null}
+          <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            If you need a car for a few days, such as 7, 15, or 30 days, please contact SSRK Travels and Self Drive Cars.
+            We have the lowest prices for long-term rentals.
+          </p>
 
           {estimatedBill ? (
             <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
