@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=Playfair+Display:wght@600;700&family=Sora:wght@600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -47,10 +47,45 @@ body {
   }
 }
 
+@keyframes title-word-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94) rotateX(20deg);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0);
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 0.7s ease forwards;
 }
 
 .animate-fade-in {
   animation: fade-in 0.9s ease forwards;
+}
+
+.header-title-premium {
+  font-family: 'Cinzel', 'Sora', sans-serif;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7),
+    0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+.header-title-premium .title-word {
+  opacity: 0;
+  transform: translateY(12px) scale(0.94);
+  background: linear-gradient(180deg, #0f172a 0%, #1d4f63 45%, #0f172a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-title-premium .title-word-enter {
+  animation: title-word-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
