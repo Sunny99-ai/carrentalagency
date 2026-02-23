@@ -13,6 +13,7 @@ const links = [
 function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isCompact, setIsCompact] = useState(false)
+  const [playTitleAnimation, setPlayTitleAnimation] = useState(false)
 
   const closeMobileMenu = () => setIsMobileOpen(false)
 
@@ -24,6 +25,13 @@ function Navbar() {
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setPlayTitleAnimation(true)
+    })
+    return () => window.cancelAnimationFrame(frameId)
   }, [])
 
   return (
@@ -52,7 +60,7 @@ function Navbar() {
               isCompact ? 'text-lg sm:text-xl lg:text-2xl' : 'text-2xl sm:text-3xl lg:text-3xl'
             }`}
           >
-            <span className="animate-title-formation inline-flex items-center gap-2">
+            <span className={`${playTitleAnimation ? 'animate-title-formation' : 'opacity-0'} inline-flex items-center gap-2`}>
               <img
                 src={stamp}
                 alt=""
