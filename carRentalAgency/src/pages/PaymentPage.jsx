@@ -5,6 +5,9 @@ import Seo from '../components/Seo'
 import { saveBooking } from '../services/bookingsApi'
 import upiQrImage from '../assets/6114191099447413884.jpg'
 
+const UPI_ID = '8247253417@ybl'
+const SAFER_UPI_LIMIT = 2000
+
 const SELF_DRIVE_TERMS = [
   'I am above 21 years old and hold a valid driving license.',
   'Only the registered customer will drive the vehicle.',
@@ -35,6 +38,7 @@ function PaymentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [paymentUploadMessage, setPaymentUploadMessage] = useState('')
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [upiCopied, setUpiCopied] = useState(false)
   const areSelfDriveTermsAccepted = !isSelfDrive || selfDriveTermsAccepted.every(Boolean)
 
   const onPaymentFileChange = (event) => {
@@ -116,6 +120,16 @@ function PaymentPage() {
     }
   }
 
+  const onCopyUpiId = async () => {
+    try {
+      await navigator.clipboard.writeText(UPI_ID)
+      setUpiCopied(true)
+      window.setTimeout(() => setUpiCopied(false), 1600)
+    } catch {
+      setPaymentUploadMessage('Unable to copy UPI ID automatically. Please copy it manually.')
+    }
+  }
+
   if (!bookingPayload) {
     return (
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
@@ -182,6 +196,24 @@ function PaymentPage() {
             alt="UPI QR placeholder"
             className="mt-5 w-full rounded-xl border border-slate-200 bg-white p-4"
           />
+          <p className="mt-3 text-center text-sm font-semibold tracking-wide text-slate-500">------or-----</p>
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">UPI ID</p>
+            <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-slate-300 bg-white px-3 py-2">
+              <p className="text-sm font-semibold text-ink">{UPI_ID}</p>
+              <button
+                type="button"
+                onClick={onCopyUpiId}
+                className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:text-ink"
+              >
+                Copy
+              </button>
+            </div>
+            <p className={`mt-2 text-sm font-semibold ${totalAmount > SAFER_UPI_LIMIT ? 'text-amber-700' : 'text-slate-700'}`}>
+              If bill is more than Rs {SAFER_UPI_LIMIT}, pay via UPI ID for safer transaction.
+            </p>
+            {upiCopied ? <p className="mt-1 text-xs font-semibold text-emerald-700">UPI ID copied.</p> : null}
+          </div>
 
           <label className="mt-5 block text-sm font-semibold text-slate-700">
             Upload Payment Screenshot
