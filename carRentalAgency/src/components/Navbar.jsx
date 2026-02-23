@@ -26,9 +26,9 @@ function Navbar() {
           />
           <span className="max-w-[320px] text-center text-lg font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-xl md:text-left lg:text-2xl">
             <span className="inline-flex items-center gap-2">
-              <img src={stamp} alt="" aria-hidden="true" className="h-[1.2em] w-[1.2em] shrink-0 object-contain" />
+              <img src={stamp} alt="" aria-hidden="true" className="h-[2.2em] w-[2.2em] shrink-0 object-contain" />
               <span>SSRK TRAVELS AND SELF DRIVE CARS</span>
-              <img src={stamp} alt="" aria-hidden="true" className="h-[1.2em] w-[1.2em] shrink-0 object-contain" />
+              <img src={stamp} alt="" aria-hidden="true" className="h-[2.2em] w-[2.2em] shrink-0 object-contain" />
             </span>
           </span>
         </NavLink>
