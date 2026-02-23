@@ -60,7 +60,7 @@ function Navbar() {
             className={`max-w-[360px] text-center font-extrabold uppercase leading-tight transition-all duration-300 md:text-left ${
               isCompact ? 'text-lg sm:text-xl lg:text-2xl' : 'text-2xl sm:text-3xl lg:text-3xl'
             }`}
-            style={{ fontFamily: '"Outfit", "Sora", "Manrope", sans-serif', letterSpacing: '0.08em' }}
+            style={{ fontFamily: '"Mileast Regular", "Outfit", "Sora", "Manrope", sans-serif', letterSpacing: '0.08em' }}
           >
             <span className="inline-flex items-center gap-2">
               <img
@@ -75,7 +75,7 @@ function Navbar() {
                 {titleWords.map((word, index) => (
                   <span
                     key={word}
-                    className={`inline-block bg-gradient-to-b from-slate-900 via-cyan-800 to-slate-900 bg-clip-text text-transparent drop-shadow-[0_8px_16px_rgba(15,23,42,0.2)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    className={`navbar-title-word inline-block bg-gradient-to-b from-slate-900 via-cyan-800 to-slate-900 bg-clip-text text-transparent drop-shadow-[0_8px_16px_rgba(15,23,42,0.2)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                       playTitleAnimation ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
                     }`}
                     style={{ transitionDelay: `${index * 90}ms` }}
