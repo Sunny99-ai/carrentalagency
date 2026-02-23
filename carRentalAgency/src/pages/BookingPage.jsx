@@ -861,8 +861,13 @@ function BookingPage() {
               </div>
             </div>
           ) : null}
-          <p className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-            Waiting charges and toll gate charges are applicable.
+          <p className="mt-4 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            <svg className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 8V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <circle cx="12" cy="17" r="1.2" fill="currentColor" />
+              <path d="M10.4 3.7L2.9 17.1C2.2 18.3 3.1 19.8 4.5 19.8H19.5C20.9 19.8 21.8 18.3 21.1 17.1L13.6 3.7C12.9 2.4 11.1 2.4 10.4 3.7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>Waiting charges and toll gate charges are applicable.</span>
           </p>
 
           <button
