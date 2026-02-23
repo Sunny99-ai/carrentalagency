@@ -5,6 +5,17 @@ import Seo from '../components/Seo'
 import { saveBooking } from '../services/bookingsApi'
 import upiQrImage from '../assets/6114191099447413884.jpg'
 
+const SELF_DRIVE_TERMS = [
+  'I am above 21 years old and hold a valid driving license.',
+  'Only the registered customer will drive the vehicle.',
+  'I agree to follow all traffic rules and company terms.',
+  'I accept responsibility for damages, fines, or violations during the rental period.',
+  'I agree to extra charges if time or kilometer limits are exceeded.',
+  'I consent to submit valid ID and license for verification.',
+  'By booking, I accept all terms & conditions of the self-drive service.',
+  'I confirm that I have read and agreed to all terms & conditions of the self-drive cars.',
+]
+
 const setCookie = (name, value, maxAgeSeconds = 60 * 60 * 24 * 7) => {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; samesite=lax`
 }
@@ -16,12 +27,15 @@ function PaymentPage() {
   const totalAmount = Number(bookingPayload?.finalAmount) || 0
   const advanceAmount = totalAmount ? Math.min(500, totalAmount) : 0
   const paymentOption = bookingPayload?.paymentOption || 'full'
+  const isSelfDrive = bookingPayload?.tripType === 'Self Drive'
   const amountToPay = paymentOption === 'advance' ? advanceAmount : totalAmount
   const remainingAmount = Math.max(0, totalAmount - amountToPay)
   const [selectedPaymentFile, setSelectedPaymentFile] = useState(null)
+  const [selfDriveTermsAccepted, setSelfDriveTermsAccepted] = useState(() => SELF_DRIVE_TERMS.map(() => false))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [paymentUploadMessage, setPaymentUploadMessage] = useState('')
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const areSelfDriveTermsAccepted = !isSelfDrive || selfDriveTermsAccepted.every(Boolean)
 
   const onPaymentFileChange = (event) => {
     const file = event.target.files?.[0] || null
@@ -68,6 +82,10 @@ function PaymentPage() {
 
   const onPaymentUpload = async () => {
     if (!bookingPayload || !selectedPaymentFile) return
+    if (!areSelfDriveTermsAccepted) {
+      setPaymentUploadMessage('Please accept all self-drive terms and conditions to continue.')
+      return
+    }
     setIsSubmitting(true)
     setPaymentUploadMessage('')
     try {
@@ -173,9 +191,32 @@ function PaymentPage() {
               className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
+          {isSelfDrive ? (
+            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-bold text-amber-800">Self-Drive Terms & Conditions (Required)</p>
+              <div className="mt-3 space-y-2">
+                {SELF_DRIVE_TERMS.map((term, index) => (
+                  <label key={term} className="flex items-start gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={selfDriveTermsAccepted[index]}
+                      onChange={(event) => {
+                        const { checked } = event.target
+                        setSelfDriveTermsAccepted((current) => current.map((item, i) => (i === index ? checked : item)))
+                        setPaymentUploadMessage('')
+                      }}
+                      className="mt-1 h-4 w-4 rounded border-slate-300"
+                    />
+                    <span>{term}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="mt-3 text-sm font-semibold text-rose-700">No drunk driving. Customer fully responsible.</p>
+            </div>
+          ) : null}
           <button
             type="button"
-            disabled={!selectedPaymentFile || isSubmitting}
+            disabled={!selectedPaymentFile || isSubmitting || !areSelfDriveTermsAccepted}
             onClick={onPaymentUpload}
             className="mt-4 w-full rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
           >
