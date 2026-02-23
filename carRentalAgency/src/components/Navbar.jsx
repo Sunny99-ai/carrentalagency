@@ -29,10 +29,10 @@ function Navbar() {
   }, [])
 
   useEffect(() => {
-    const frameId = window.requestAnimationFrame(() => {
+    const timerId = window.setTimeout(() => {
       setPlayTitleAnimation(true)
-    })
-    return () => window.cancelAnimationFrame(frameId)
+    }, 80)
+    return () => window.clearTimeout(timerId)
   }, [])
 
   return (
@@ -57,9 +57,10 @@ function Navbar() {
             }`}
           />
           <span
-            className={`header-title-premium max-w-[360px] text-center font-extrabold uppercase leading-tight transition-all duration-300 md:text-left ${
+            className={`max-w-[360px] text-center font-extrabold uppercase leading-tight transition-all duration-300 md:text-left ${
               isCompact ? 'text-lg sm:text-xl lg:text-2xl' : 'text-2xl sm:text-3xl lg:text-3xl'
             }`}
+            style={{ fontFamily: '"Cinzel", "Sora", "Manrope", sans-serif', letterSpacing: '0.08em' }}
           >
             <span className="inline-flex items-center gap-2">
               <img
@@ -74,8 +75,10 @@ function Navbar() {
                 {titleWords.map((word, index) => (
                   <span
                     key={word}
-                    className={playTitleAnimation ? 'title-word title-word-enter' : 'title-word'}
-                    style={{ animationDelay: `${index * 90}ms` }}
+                    className={`inline-block bg-gradient-to-b from-slate-900 via-cyan-800 to-slate-900 bg-clip-text text-transparent drop-shadow-[0_8px_16px_rgba(15,23,42,0.2)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      playTitleAnimation ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+                    }`}
+                    style={{ transitionDelay: `${index * 90}ms` }}
                   >
                     {word}
                   </span>
