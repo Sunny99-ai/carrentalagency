@@ -5,7 +5,7 @@ import Seo from '../components/Seo'
 import { saveBooking } from '../services/bookingsApi'
 import upiQrImage from '../assets/6114191099447413884.jpg'
 
-const UPI_ID = '8247253417@ybl'
+const UPI_ID = '9533732579@upi'
 const SAFER_UPI_LIMIT = 2000
 
 const SELF_DRIVE_TERMS = [
