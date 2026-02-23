@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import logo from '../assets/new-logo.png'
+import stamp from '../assets/stamp.png'
 
 const links = [
   { label: 'Home', to: '/' },
@@ -19,12 +21,16 @@ function Navbar() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <NavLink to="/" className="flex shrink-0 flex-col items-center gap-2 md:items-start">
           <img
-            src="/new-logo.png"
+            src={logo}
             alt="SSRK logo"
             className="h-28 w-28 rounded-xl object-cover shadow-premium sm:h-32 sm:w-32 lg:h-36 lg:w-36"
           />
-          <span className="max-w-[260px] text-center text-sm font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-base md:text-left lg:text-lg">
-            SSRK TRAVELS AND SELF DRIVE CARS
+          <span className="max-w-[320px] text-center text-lg font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-xl md:text-left lg:text-2xl">
+            <span className="inline-flex items-center gap-2">
+              <img src={stamp} alt="" aria-hidden="true" className="h-[1.2em] w-[1.2em] shrink-0 object-contain" />
+              <span>SSRK TRAVELS AND SELF DRIVE CARS</span>
+              <img src={stamp} alt="" aria-hidden="true" className="h-[1.2em] w-[1.2em] shrink-0 object-contain" />
+            </span>
           </span>
         </NavLink>
         <nav className="hidden items-center gap-6 md:flex">
