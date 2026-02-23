@@ -23,13 +23,137 @@ const initialForm = {
   paymentOption: 'full',
 }
 
-const EXTRA_KM_RATE = 5
 const SEVEN_SEATER_ADDON = 500
-const PLAN_12H_PRICE = 1000
-const PLAN_24H_300KM_PRICE = 2000
-const PLAN_24H_400KM_PRICE = 2500
-const PLAN_48H_700KM_PRICE = 4000
-const PLAN_72H_700KM_PRICE = 5000
+const EXTRA_KM_RATE = 5
+const SELF_DRIVE_RATE_CHART = {
+  12: [
+    { km: 100, price: 1000 },
+    { km: 150, price: 1250 },
+    { km: 200, price: 1400 },
+    { km: 250, price: 1600 },
+    { km: 300, price: 1750 },
+    { km: 350, price: 1850 },
+    { km: 400, price: 2000 },
+    { km: 500, price: 2500 },
+    { km: 600, price: 3000 },
+  ],
+  24: [
+    { km: 100, price: 1500 },
+    { km: 150, price: 1700 },
+    { km: 200, price: 1800 },
+    { km: 250, price: 1900 },
+    { km: 300, price: 2000 },
+    { km: 350, price: 2000 },
+    { km: 400, price: 2000 },
+    { km: 500, price: 2500 },
+    { km: 600, price: 3000 },
+    { km: 650, price: 3500 },
+    { km: 700, price: 3700 },
+    { km: 800, price: 4000 },
+    { km: 900, price: 4500 },
+    { km: 1000, price: 5000 },
+  ],
+  36: [
+    { km: 100, price: 2000 },
+    { km: 150, price: 2200 },
+    { km: 200, price: 2300 },
+    { km: 250, price: 2400 },
+    { km: 300, price: 2500 },
+    { km: 350, price: 2500 },
+    { km: 400, price: 2500 },
+    { km: 500, price: 3000 },
+    { km: 600, price: 3500 },
+    { km: 650, price: 4000 },
+    { km: 700, price: 4200 },
+    { km: 800, price: 4500 },
+    { km: 900, price: 5000 },
+    { km: 1000, price: 5500 },
+  ],
+  48: [
+    { km: 100, price: 2800 },
+    { km: 150, price: 2900 },
+    { km: 200, price: 3000 },
+    { km: 250, price: 3000 },
+    { km: 300, price: 3000 },
+    { km: 350, price: 3000 },
+    { km: 400, price: 3500 },
+    { km: 500, price: 3500 },
+    { km: 600, price: 3500 },
+    { km: 650, price: 3600 },
+    { km: 700, price: 3800 },
+    { km: 800, price: 4000 },
+    { km: 900, price: 4700 },
+    { km: 1000, price: 5500 },
+  ],
+  60: [
+    { km: 100, price: 3300 },
+    { km: 150, price: 3400 },
+    { km: 200, price: 3500 },
+    { km: 250, price: 3500 },
+    { km: 300, price: 3500 },
+    { km: 350, price: 3500 },
+    { km: 400, price: 4000 },
+    { km: 500, price: 4000 },
+    { km: 600, price: 4000 },
+    { km: 650, price: 4100 },
+    { km: 700, price: 4300 },
+    { km: 800, price: 4500 },
+    { km: 900, price: 5200 },
+    { km: 1000, price: 6000 },
+  ],
+  72: [
+    { km: 100, price: 3800 },
+    { km: 150, price: 3900 },
+    { km: 200, price: 4000 },
+    { km: 250, price: 4000 },
+    { km: 300, price: 4000 },
+    { km: 350, price: 4500 },
+    { km: 400, price: 5000 },
+    { km: 500, price: 5000 },
+    { km: 600, price: 5000 },
+    { km: 650, price: 5100 },
+    { km: 700, price: 5300 },
+    { km: 800, price: 5500 },
+    { km: 900, price: 6200 },
+    { km: 1000, price: 7000 },
+    { km: 1100, price: 7800 },
+    { km: 1200, price: 8600 },
+    { km: 1300, price: 9400 },
+    { km: 1400, price: 10200 },
+    { km: 1500, price: 11000 },
+    { km: 1600, price: 11800 },
+    { km: 1700, price: 12600 },
+    { km: 1800, price: 13400 },
+    { km: 1900, price: 14200 },
+    { km: 2000, price: 15000 },
+  ],
+  90: [
+    { km: 100, price: 5800 },
+    { km: 150, price: 5900 },
+    { km: 200, price: 6000 },
+    { km: 250, price: 6000 },
+    { km: 300, price: 6000 },
+    { km: 350, price: 6500 },
+    { km: 400, price: 7000 },
+    { km: 500, price: 7000 },
+    { km: 600, price: 7000 },
+    { km: 650, price: 7100 },
+    { km: 700, price: 7300 },
+    { km: 800, price: 7500 },
+    { km: 900, price: 8200 },
+    { km: 1000, price: 9000 },
+    { km: 1100, price: 9800 },
+    { km: 1200, price: 10600 },
+    { km: 1300, price: 11400 },
+    { km: 1400, price: 12200 },
+    { km: 1500, price: 13000 },
+    { km: 1600, price: 13800 },
+    { km: 1700, price: 14600 },
+    { km: 1800, price: 15400 },
+    { km: 1900, price: 16200 },
+    { km: 2000, price: 17000 },
+  ],
+}
 
 const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0
 const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -56,119 +180,75 @@ function toMinutesFrom12Hour(hourValue, minuteValue, period) {
 function calculateRentalPrice(totalHours, totalDistanceKm) {
   const hours = Number(totalHours)
   const distanceKm = Number(totalDistanceKm)
+  if (!Number.isFinite(hours) || !Number.isFinite(distanceKm) || distanceKm <= 0) return null
 
-  if (!Number.isFinite(hours) || !Number.isFinite(distanceKm) || distanceKm < 0) {
-    return null
-  }
+  const points = SELF_DRIVE_RATE_CHART[hours]
+  if (!points?.length) return null
 
-  if (hours === 12) {
-    const extraKm = Math.max(0, distanceKm - 100)
-    const extraCharge = extraKm * EXTRA_KM_RATE
-    const finalAmount = Math.round(PLAN_12H_PRICE + extraCharge)
+  const sorted = [...points].sort((a, b) => a.km - b.km)
+  const first = sorted[0]
+  const last = sorted[sorted.length - 1]
 
+  if (distanceKm <= first.km) {
     return {
-      slab: '12h-100km',
-      rentalDays: 1,
+      slab: `${hours}h-chart`,
+      rentalDays: Math.ceil(hours / 24),
       extraHours: 0,
-      baseFare: PLAN_12H_PRICE,
-      freeKmLimit: 100,
-      extraKm,
-      extraCharge: Math.round(extraCharge),
-      finalAmount,
-    }
-  }
-
-  if (hours === 24 && distanceKm >= 400) {
-    const extraKm = Math.max(0, distanceKm - 400)
-    const extraCharge = extraKm * EXTRA_KM_RATE
-    const finalAmount = Math.round(PLAN_24H_400KM_PRICE + extraCharge)
-
-    return {
-      slab: '24h-400km',
-      rentalDays: 1,
-      extraHours: 0,
-      baseFare: PLAN_24H_400KM_PRICE,
-      freeKmLimit: 400,
-      extraKm,
-      extraCharge: Math.round(extraCharge),
-      finalAmount,
-    }
-  }
-
-  if (hours === 24) {
-    const finalAmount = PLAN_24H_300KM_PRICE
-    return {
-      slab: '24h-300km',
-      rentalDays: 1,
-      extraHours: 0,
-      baseFare: PLAN_24H_300KM_PRICE,
-      freeKmLimit: 399,
+      baseFare: first.price,
+      freeKmLimit: first.km,
       extraKm: 0,
       extraCharge: 0,
-      finalAmount,
+      finalAmount: first.price,
     }
   }
 
-  if (hours === 48) {
-    const extraKm = Math.max(0, distanceKm - 700)
-    const extraCharge = extraKm * EXTRA_KM_RATE
-    const finalAmount = Math.round(PLAN_48H_700KM_PRICE + extraCharge)
+  for (let index = 0; index < sorted.length - 1; index += 1) {
+    const start = sorted[index]
+    const end = sorted[index + 1]
 
-    return {
-      slab: '48h-700km',
-      rentalDays: 2,
-      extraHours: 0,
-      baseFare: PLAN_48H_700KM_PRICE,
-      freeKmLimit: 700,
-      extraKm,
-      extraCharge: Math.round(extraCharge),
-      finalAmount,
+    if (distanceKm === start.km) {
+      return {
+        slab: `${hours}h-chart`,
+        rentalDays: Math.ceil(hours / 24),
+        extraHours: 0,
+        baseFare: start.price,
+        freeKmLimit: start.km,
+        extraKm: 0,
+        extraCharge: 0,
+        finalAmount: start.price,
+      }
+    }
+
+    if (distanceKm > start.km && distanceKm <= end.km) {
+      const ratio = (distanceKm - start.km) / (end.km - start.km)
+      const interpolated = Math.round(start.price + ratio * (end.price - start.price))
+      return {
+        slab: `${hours}h-chart`,
+        rentalDays: Math.ceil(hours / 24),
+        extraHours: 0,
+        baseFare: interpolated,
+        freeKmLimit: distanceKm,
+        extraKm: 0,
+        extraCharge: 0,
+        finalAmount: interpolated,
+      }
     }
   }
 
-  if (hours === 72) {
-    const extraKm = Math.max(0, distanceKm - 700)
-    const extraCharge = extraKm * EXTRA_KM_RATE
-    const finalAmount = Math.round(PLAN_72H_700KM_PRICE + extraCharge)
-
-    return {
-      slab: '72h-700km',//changes
-      rentalDays: 3,
-      extraHours: 0,
-      baseFare: PLAN_72H_700KM_PRICE,
-      freeKmLimit: 700,
-      extraKm,
-      extraCharge: Math.round(extraCharge),
-      finalAmount,
-    }
-  }
-
-  // Unsupported hour package.
-  const extraKm = Math.max(0, distanceKm - 700)
+  const extraKm = distanceKm - last.km
   const extraCharge = extraKm * EXTRA_KM_RATE
-  const finalAmount = Math.round(PLAN_48H_700KM_PRICE + extraCharge)
+  const finalAmount = Math.round(last.price + extraCharge)
 
   return {
-    slab: 'unsupported-hour-package',
-    rentalDays: 2,
+    slab: `${hours}h-chart`,
+    rentalDays: Math.ceil(hours / 24),
     extraHours: 0,
-    baseFare: PLAN_48H_700KM_PRICE,
-    freeKmLimit: 700,
+    baseFare: last.price,
+    freeKmLimit: last.km,
     extraKm,
     extraCharge: Math.round(extraCharge),
     finalAmount,
   }
-}
-
-function findExactSelfDrivePlan(plans, totalHours, totalDistanceKm) {
-  const list = Array.isArray(plans) ? plans : []
-  return (
-    list.find((plan) => {
-      const planHours = parseNumber(plan.duration)
-      const planKm = parseNumber(plan.km)
-      return planHours === totalHours && planKm === totalDistanceKm
-    }) || null
-  )
 }
 
 function BookingPage() {
@@ -184,6 +264,11 @@ function BookingPage() {
 
   const hourOptions = useMemo(() => Array.from({ length: 12 }, (_, index) => String(index + 1)), [])
   const minuteOptions = useMemo(() => Array.from({ length: 60 }, (_, index) => pad(index)), [])
+  const selfDriveKmOptions = useMemo(() => {
+    const selectedHours = parseNumber(formData.selfDriveHours)
+    const points = SELF_DRIVE_RATE_CHART[selectedHours] || []
+    return [...points].sort((a, b) => a.km - b.km).map((point) => point.km)
+  }, [formData.selfDriveHours])
 
   const prefilledFormData = useMemo(() => {
     const tripTypeParam = searchParams.get('tripType')
@@ -231,6 +316,14 @@ function BookingPage() {
       timePeriod: 'AM',
     }))
   }, [formData.date, formData.timeHour, formData.timeMinute, formData.timePeriod, todayString, currentMinutes])
+
+  useEffect(() => {
+    if (formData.tripType !== 'Self Drive') return
+    if (!formData.selfDriveKm) return
+    const selectedKm = parseNumber(formData.selfDriveKm)
+    if (selfDriveKmOptions.includes(selectedKm)) return
+    setFormData((current) => ({ ...current, selfDriveKm: '' }))
+  }, [formData.tripType, formData.selfDriveKm, selfDriveKmOptions])
 
   const matchedLocation = useMemo(() => {
     const target = normalize(formData.dropLocation)
@@ -296,21 +389,6 @@ function BookingPage() {
       const enteredKm = parseNumber(formData.selfDriveKm)
       if (!enteredHours || !enteredKm) return null
 
-      const exactPlan = findExactSelfDrivePlan(pricing.selfDrive?.plans, enteredHours, enteredKm)
-      if (exactPlan) {
-        const exactPrice = parseNumber(
-          formData.carType === '7 Seater' ? exactPlan.sevenSeaterPrice : exactPlan.fiveSeaterPrice,
-        )
-        return {
-          amount: exactPrice,
-          kmUsed: enteredKm,
-          breakdown: [
-            `Exact Plan Matched: ${exactPlan.title}`,
-            `Direct Plan Fare (${formData.carType}): Rs ${exactPrice}`,
-          ],
-        }
-      }
-
       const selfDrive = calculateRentalPrice(enteredHours, enteredKm)
       if (!selfDrive) return null
 
@@ -320,7 +398,8 @@ function BookingPage() {
         kmUsed: enteredKm,
         breakdown: [
           `Rental Days (24h blocks): ${selfDrive.rentalDays}`,
-          `Applied Slab: ${selfDrive.slab}`,
+          `Applied Package: ${enteredHours} Hours`,
+          `Rate Source: Fixed Chart`,
           `Extra Hours: ${selfDrive.extraHours}`,
           `Base Fare: Rs ${selfDrive.baseFare}`,
           `Free KM Limit: ${selfDrive.freeKmLimit} KM`,
@@ -356,7 +435,7 @@ function BookingPage() {
         ...(outstationSurcharge ? [`7 Seater Add-On: Rs ${outstationSurcharge}`] : []),
       ],
     }
-  }, [formData, matchedLocation, pricing, getDynamicCustomKmPrice])
+  }, [formData, matchedLocation, getDynamicCustomKmPrice])
 
   const canSubmit = useMemo(() => {
     const baseValid = [
@@ -382,7 +461,12 @@ function BookingPage() {
 
   const onChange = (event) => {
     const { name, value } = event.target
-    setFormData((current) => ({ ...current, [name]: value }))
+    setFormData((current) => {
+      if (name === 'selfDriveHours') {
+        return { ...current, selfDriveHours: value, selfDriveKm: '' }
+      }
+      return { ...current, [name]: value }
+    })
   }
 
   const onTimePartChange = (name, value) => {
@@ -557,21 +641,30 @@ function BookingPage() {
                     <option value="">Select Hours</option>
                     <option value="12">12 Hours</option>
                     <option value="24">24 Hours</option>
+                    <option value="36">36 Hours</option>
                     <option value="48">48 Hours</option>
+                    <option value="60">60 Hours</option>
                     <option value="72">72 Hours</option>
+                    <option value="90">90 Hours</option>
                   </select>
                 </label>
                 <label className="text-sm font-semibold text-slate-600">
                   KM
-                  <input
+                  <select
                     required
-                    min="1"
                     name="selfDriveKm"
-                    type="number"
                     value={formData.selfDriveKm}
                     onChange={onChange}
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
-                  />
+                    disabled={!formData.selfDriveHours}
+                  >
+                    <option value="">{formData.selfDriveHours ? 'Select KM' : 'Select Hours First'}</option>
+                    {selfDriveKmOptions.map((km) => (
+                      <option key={km} value={km}>
+                        {km} KM
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </>
             ) : (
@@ -648,7 +741,7 @@ function BookingPage() {
 
           {formData.tripType === 'Self Drive' ? (
             <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-              Select 12/24/48/72 hour package. Price is slab-based and Rs 5 per extra KM applies above the slab limit.
+              Select 12/24/36/48/60/72/90 hour package. Self-drive price is calculated only from the fixed KM rate chart.
             </p>
           ) : null}
 
