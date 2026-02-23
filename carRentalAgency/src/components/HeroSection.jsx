@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import homeBanner from '../assets/ssrk-home-banner.png'
+import homeBanner from 'ChatGPT Image Feb 23, 2026, 01_54_34 PM.png'
 
 function HeroSection() {
   return (
