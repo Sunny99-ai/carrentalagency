@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import stamp from '../assets/stamp.png'
 
@@ -12,23 +12,64 @@ const links = [
 
 function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isCompact, setIsCompact] = useState(false)
 
   const closeMobileMenu = () => setIsMobileOpen(false)
 
+  useEffect(() => {
+    const onScroll = () => {
+      setIsCompact(window.scrollY > 40)
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+    <header
+      className={`sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md transition-all duration-300 ${
+        isCompact ? '-translate-y-1' : 'translate-y-0'
+      }`}
+    >
+      <div
+        className={`mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 transition-all duration-300 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8 ${
+          isCompact ? 'py-2 md:py-2' : 'py-5'
+        }`}
+      >
         <NavLink to="/" className="flex shrink-0 flex-col items-center gap-2 md:items-start">
           <img
             src="/new-logo.png"
             alt="SSRK logo"
-            className="h-44 w-44 rounded-xl object-cover shadow-none sm:h-48 sm:w-48 md:h-20 md:w-20 md:shadow-premium lg:h-24 lg:w-24"
+            className={`rounded-xl object-cover transition-all duration-300 ${
+              isCompact
+                ? 'h-28 w-28 shadow-none sm:h-32 sm:w-32 md:h-16 md:w-16 md:shadow-premium lg:h-20 lg:w-20'
+                : 'h-44 w-44 shadow-none sm:h-48 sm:w-48 md:h-20 md:w-20 md:shadow-premium lg:h-24 lg:w-24'
+            }`}
           />
-          <span className="max-w-[320px] text-center text-lg font-semibold leading-tight tracking-[0.08em] text-slate-700 sm:text-xl md:text-left lg:text-2xl">
+          <span
+            className={`max-w-[320px] text-center font-semibold leading-tight tracking-[0.08em] text-slate-700 transition-all duration-300 md:text-left ${
+              isCompact ? 'text-base sm:text-lg lg:text-xl' : 'text-lg sm:text-xl lg:text-2xl'
+            }`}
+          >
             <span className="inline-flex items-center gap-2">
-              <img src={stamp} alt="" aria-hidden="true" className="h-[4.2em] w-[4.2em] shrink-0 object-contain" />
+              <img
+                src={stamp}
+                alt=""
+                aria-hidden="true"
+                className={`shrink-0 object-contain transition-all duration-300 ${
+                  isCompact ? 'h-[2.4em] w-[2.4em]' : 'h-[3.2em] w-[3.2em]'
+                }`}
+              />
               <span>SSRK TRAVELS AND SELF DRIVE CARS</span>
-              <img src={stamp} alt="" aria-hidden="true" className="h-[4.2em] w-[4.2em] shrink-0 object-contain" />
+              <img
+                src={stamp}
+                alt=""
+                aria-hidden="true"
+                className={`shrink-0 object-contain transition-all duration-300 ${
+                  isCompact ? 'h-[2.4em] w-[2.4em]' : 'h-[3.2em] w-[3.2em]'
+                }`}
+              />
             </span>
           </span>
         </NavLink>
