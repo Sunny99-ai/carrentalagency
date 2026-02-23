@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import SectionHeader from '../components/SectionHeader'
 import Seo from '../components/Seo'
@@ -23,71 +23,154 @@ const initialForm = {
   paymentOption: 'full',
 }
 
-const EXTRA_HOUR_RATE = 150
 const EXTRA_KM_RATE = 5
 const SEVEN_SEATER_ADDON = 500
+const PLAN_12H_PRICE = 1000
+const PLAN_24H_300KM_PRICE = 2000
+const PLAN_24H_400KM_PRICE = 2500
+const PLAN_48H_700KM_PRICE = 4000
+const PLAN_72H_700KM_PRICE = 5000
 
 const parseNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0
 const normalize = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 const outstationSevenSeaterAddOn = 500
 const pad = (value) => String(value).padStart(2, '0')
-const FIRST_DAY_RATE = 2000
-const WAITING_DAY_RATE = 1500
-const FREE_KM_LIMIT = 400
-const EXTRA_KM_RATE = 5
 
-function calculateSelfDrivePrice(totalHours, totalDistanceKm, carType) {
+function getLocalDateString() {
+  const now = new Date()
+  const offsetMs = now.getTimezoneOffset() * 60 * 1000
+  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10)
+}
+
+function toMinutesFrom12Hour(hourValue, minuteValue, period) {
+  const hour = Number(hourValue)
+  const minute = Number(minuteValue)
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null
+  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) return null
+
+  const normalizedHour = hour % 12
+  const periodOffset = period === 'PM' ? 12 : 0
+  return (normalizedHour + periodOffset) * 60 + minute
+}
+
+function calculateRentalPrice(totalHours, totalDistanceKm) {
   const hours = Number(totalHours)
-  const distance = Number(totalDistanceKm)
+  const distanceKm = Number(totalDistanceKm)
 
-  if (!Number.isFinite(hours) || !Number.isFinite(distance) || hours <= 0 || distance < 0) {
+  if (!Number.isFinite(hours) || !Number.isFinite(distanceKm) || distanceKm < 0) {
     return null
   }
 
-  // Base plan selection
-  let baseHours = 0
-  let baseKm = 0
-  let basePrice = 0
+  if (hours === 12) {
+    const extraKm = Math.max(0, distanceKm - 100)
+    const extraCharge = extraKm * EXTRA_KM_RATE
+    const finalAmount = Math.round(PLAN_12H_PRICE + extraCharge)
 
-  if (hours <= 12 && distance <=100) {
-    baseHours = 12
-    baseKm = 100
-    basePrice = 1000
-  } else if (hours <= 24 && distance <= 300) {
-    baseHours = 24
-    baseKm = 300
-    basePrice = 2000
-  } else {
-    baseHours = 24
-    baseKm = 400
-    basePrice = 2500
+    return {
+      slab: '12h-100km',
+      rentalDays: 1,
+      extraHours: 0,
+      baseFare: PLAN_12H_PRICE,
+      freeKmLimit: 100,
+      extraKm,
+      extraCharge: Math.round(extraCharge),
+      finalAmount,
+    }
   }
 
-  // Extra hour calculation (NO DAY ROUNDING)
-  const extraHours = Math.max(0, hours - baseHours)
-  const extraHourCharge = extraHours * EXTRA_HOUR_RATE
+  if (hours === 24 && distanceKm >= 400) {
+    const extraKm = Math.max(0, distanceKm - 400)
+    const extraCharge = extraKm * EXTRA_KM_RATE
+    const finalAmount = Math.round(PLAN_24H_400KM_PRICE + extraCharge)
 
-  // Extra KM calculation
-  const extraKm = Math.max(0, distance - baseKm)
-  const extraKmCharge = extraKm * EXTRA_KM_RATE
+    return {
+      slab: '24h-400km',
+      rentalDays: 1,
+      extraHours: 0,
+      baseFare: PLAN_24H_400KM_PRICE,
+      freeKmLimit: 400,
+      extraKm,
+      extraCharge: Math.round(extraCharge),
+      finalAmount,
+    }
+  }
 
-  const sevenSeaterCharge = carType === '7 Seater' ? SEVEN_SEATER_ADDON : 0
+  if (hours === 24) {
+    const finalAmount = PLAN_24H_300KM_PRICE
+    return {
+      slab: '24h-300km',
+      rentalDays: 1,
+      extraHours: 0,
+      baseFare: PLAN_24H_300KM_PRICE,
+      freeKmLimit: 399,
+      extraKm: 0,
+      extraCharge: 0,
+      finalAmount,
+    }
+  }
 
-  const finalAmount =
-    basePrice + extraHourCharge + extraKmCharge + sevenSeaterCharge
+  if (hours === 48) {
+    const extraKm = Math.max(0, distanceKm - 700)
+    const extraCharge = extraKm * EXTRA_KM_RATE
+    const finalAmount = Math.round(PLAN_48H_700KM_PRICE + extraCharge)
+
+    return {
+      slab: '48h-700km',
+      rentalDays: 2,
+      extraHours: 0,
+      baseFare: PLAN_48H_700KM_PRICE,
+      freeKmLimit: 700,
+      extraKm,
+      extraCharge: Math.round(extraCharge),
+      finalAmount,
+    }
+  }
+
+  if (hours === 72) {
+    const extraKm = Math.max(0, distanceKm - 700)
+    const extraCharge = extraKm * EXTRA_KM_RATE
+    const finalAmount = Math.round(PLAN_72H_700KM_PRICE + extraCharge)
+
+    return {
+      slab: '72h-700km',//changes
+      rentalDays: 3,
+      extraHours: 0,
+      baseFare: PLAN_72H_700KM_PRICE,
+      freeKmLimit: 700,
+      extraKm,
+      extraCharge: Math.round(extraCharge),
+      finalAmount,
+    }
+  }
+
+  // Unsupported hour package.
+  const extraKm = Math.max(0, distanceKm - 700)
+  const extraCharge = extraKm * EXTRA_KM_RATE
+  const finalAmount = Math.round(PLAN_48H_700KM_PRICE + extraCharge)
 
   return {
-    basePrice,
-    baseHours,
-    baseKm,
-    extraHours,
-    extraHourCharge,
+    slab: 'unsupported-hour-package',
+    rentalDays: 2,
+    extraHours: 0,
+    baseFare: PLAN_48H_700KM_PRICE,
+    freeKmLimit: 700,
     extraKm,
-    extraKmCharge,
-    sevenSeaterCharge,
+    extraCharge: Math.round(extraCharge),
     finalAmount,
   }
 }
+
+function findExactSelfDrivePlan(plans, totalHours, totalDistanceKm) {
+  const list = Array.isArray(plans) ? plans : []
+  return (
+    list.find((plan) => {
+      const planHours = parseNumber(plan.duration)
+      const planKm = parseNumber(plan.km)
+      return planHours === totalHours && planKm === totalDistanceKm
+    }) || null
+  )
+}
+
 function BookingPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -155,16 +238,16 @@ function BookingPage() {
     return (pricing.outstation?.locations || []).find((item) => normalize(item.name) === target) || null
   }, [formData.dropLocation, pricing.outstation?.locations])
 
-  const getDynamicOutstationPoints = (acType) =>
+  const getDynamicOutstationPoints = useCallback((acType) =>
     (pricing.outstation?.kmPricing || [])
       .map((item) => ({
         km: parseNumber(item.km),
         price: parseNumber(acType === 'A/C' ? item.ac : item.nonAc),
       }))
       .filter((item) => item.km > 0 && item.price > 0)
-      .sort((a, b) => a.km - b.km)
+      .sort((a, b) => a.km - b.km), [pricing.outstation?.kmPricing])
 
-  const getDynamicCustomKmPrice = (kmValue, acType) => {
+  const getDynamicCustomKmPrice = useCallback((kmValue, acType) => {
     const points = getDynamicOutstationPoints(acType)
     if (!kmValue || points.length < 2) return null
 
@@ -203,7 +286,7 @@ function BookingPage() {
       billedKm: kmValue,
       note: `Custom KM price above ${last.km} KM`,
     }
-  }
+  }, [getDynamicOutstationPoints])
 
   const estimatedBill = useMemo(() => {
     const outstationSurcharge = formData.carType === '7 Seater' ? outstationSevenSeaterAddOn : 0
@@ -211,46 +294,43 @@ function BookingPage() {
     if (formData.tripType === 'Self Drive') {
       const enteredHours = parseNumber(formData.selfDriveHours)
       const enteredKm = parseNumber(formData.selfDriveKm)
-      ifcalculateSelfDrivePrice(totalHours, totalDistanceKm) {
-  const hours = Number(totalHours)
-  const km = Number(totalDistanceKm)
+      if (!enteredHours || !enteredKm) return null
 
-  if (!Number.isFinite(hours) || !Number.isFinite(km) || hours <= 0 || km < 0) {
-    return {
-      baseFare: 0,
-      extraHours: 0,
-      extraHourCharge: 0,
-      extraKm: 0,
-      extraKmCharge: 0,
-      finalAmount: 0,
+      const exactPlan = findExactSelfDrivePlan(pricing.selfDrive?.plans, enteredHours, enteredKm)
+      if (exactPlan) {
+        const exactPrice = parseNumber(
+          formData.carType === '7 Seater' ? exactPlan.sevenSeaterPrice : exactPlan.fiveSeaterPrice,
+        )
+        return {
+          amount: exactPrice,
+          kmUsed: enteredKm,
+          breakdown: [
+            `Exact Plan Matched: ${exactPlan.title}`,
+            `Direct Plan Fare (${formData.carType}): Rs ${exactPrice}`,
+          ],
+        }
+      }
+
+      const selfDrive = calculateRentalPrice(enteredHours, enteredKm)
+      if (!selfDrive) return null
+
+      const sevenSeaterCharge = formData.carType === '7 Seater' ? SEVEN_SEATER_ADDON : 0
+      return {
+        amount: selfDrive.finalAmount + sevenSeaterCharge,
+        kmUsed: enteredKm,
+        breakdown: [
+          `Rental Days (24h blocks): ${selfDrive.rentalDays}`,
+          `Applied Slab: ${selfDrive.slab}`,
+          `Extra Hours: ${selfDrive.extraHours}`,
+          `Base Fare: Rs ${selfDrive.baseFare}`,
+          `Free KM Limit: ${selfDrive.freeKmLimit} KM`,
+          `Extra KM: ${selfDrive.extraKm} KM`,
+          `Extra KM Charge: Rs ${selfDrive.extraCharge}`,
+          ...(sevenSeaterCharge ? [`7 Seater Add-On: Rs ${sevenSeaterCharge}`] : []),
+        ],
+      }
     }
-  }
 
-  // FIRST 24 HOURS BASE
-  const baseFare = FIRST_24H_RATE
-
-  // EXTRA HOURS AFTER 24
-  const extraHours = hours > 24 ? hours - 24 : 0
-  const extraHourCharge = extraHours * EXTRA_HOUR_RATE
-
-  // KM CALCULATION
-  const freeKmLimit = FIRST_24H_KM_LIMIT
-  const extraKm = km > freeKmLimit ? km - freeKmLimit : 0
-  const extraKmCharge = extraKm * EXTRA_KM_RATE
-
-  const finalAmount = baseFare + extraHourCharge + extraKmCharge
-
-  return {
-    baseFare,
-    extraHours,
-    extraHourCharge,
-    extraKm,
-    extraKmCharge,
-    finalAmount,
-  }
-      } (!enteredHours || !enteredKm) return null
-
-      const tripPrice = 
     const typedKm = parseNumber(formData.outstationKm)
     if (matchedLocation) {
       const locationRate = parseNumber(formData.acType === 'A/C' ? matchedLocation.ac : matchedLocation.nonAc)
@@ -276,7 +356,7 @@ function BookingPage() {
         ...(outstationSurcharge ? [`7 Seater Add-On: Rs ${outstationSurcharge}`] : []),
       ],
     }
-  }, [formData, matchedLocation, pricing])
+  }, [formData, matchedLocation, pricing, getDynamicCustomKmPrice])
 
   const canSubmit = useMemo(() => {
     const baseValid = [
@@ -331,7 +411,7 @@ function BookingPage() {
           },
         },
       })
-    } catch (error) {
+    } catch {
       setSubmitMessage('Unable to continue to payment right now. Please retry.')
     } finally {
       setIsSubmitting(false)
@@ -345,11 +425,7 @@ function BookingPage() {
         description="Submit your booking details for self-drive or outstation rental."
       />
       <div className="mx-auto w-full max-w-4xl">
-        <SectionHeader
-          overline="Booking"
-          title="Reserve your ride in minutes."
-          description="Fill your details and continue to payment."
-        />
+        <SectionHeader overline="Booking" title="Reserve your ride in minutes." description="Fill your details and continue to payment." />
 
         <form className="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium" onSubmit={onSubmit}>
           <h2 className="font-display text-3xl text-ink">Booking Form</h2>
@@ -471,15 +547,19 @@ function BookingPage() {
                 </label>
                 <label className="text-sm font-semibold text-slate-600">
                   Hours
-                  <input
+                  <select
                     required
-                    min="1"
                     name="selfDriveHours"
-                    type="number"
                     value={formData.selfDriveHours}
                     onChange={onChange}
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
-                  />
+                  >
+                    <option value="">Select Hours</option>
+                    <option value="12">12 Hours</option>
+                    <option value="24">24 Hours</option>
+                    <option value="48">48 Hours</option>
+                    <option value="72">72 Hours</option>
+                  </select>
                 </label>
                 <label className="text-sm font-semibold text-slate-600">
                   KM
@@ -507,7 +587,7 @@ function BookingPage() {
                     onChange={onChange}
                     className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
                   />
-                    <datalist id="outstation-locations">
+                  <datalist id="outstation-locations">
                     {(pricing.outstation?.locations || []).map((location) => (
                       <option key={location.name} value={location.name} />
                     ))}
@@ -568,7 +648,7 @@ function BookingPage() {
 
           {formData.tripType === 'Self Drive' ? (
             <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-              150rs per Hour and 5rs per KM will be billed if crossed Hours
+              Select 12/24/48/72 hour package. Price is slab-based and Rs 5 per extra KM applies above the slab limit.
             </p>
           ) : null}
 
