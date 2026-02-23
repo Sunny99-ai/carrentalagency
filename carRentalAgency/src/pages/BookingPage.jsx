@@ -24,6 +24,31 @@ const initialForm = {
   paymentOption: 'full',
 }
 
+const SELF_DRIVE_PICKUP_LOCATIONS = [
+  { label: 'Khanapur Onsite', charge: 0 },
+  { label: 'Khanapur', charge: 0 },
+  { label: 'Ragampet', charge: 0 },
+  { label: 'Kothur', charge: 0 },
+  { label: 'Rangapur', charge: 100 },
+  { label: 'Narsampet', charge: 0 },
+  { label: 'Gudur', charge: 200 },
+  { label: 'Budharaopet', charge: 0 },
+  { label: 'Ashok Nagar', charge: 100 },
+  { label: 'Kothagudam', charge: 200 },
+  { label: 'Sarwapur', charge: 0 },
+  { label: 'Chennaraopet', charge: 200 },
+  { label: 'Girnibavi', charge: 200 },
+  { label: 'Laknepally', charge: 200 },
+  { label: 'Maheshwaram', charge: 200 },
+  { label: 'BITS College', charge: 200 },
+  { label: 'Jayamukhi College', charge: 200 },
+  { label: 'Bhupathipet', charge: 200 },
+  { label: 'Ainepally', charge: 0 },
+  { label: 'Mangalavaripet', charge: 100 },
+  { label: 'Peddammagadda', charge: 100 },
+  { label: 'Manubothulagadda', charge: 100 },
+]
+
 const SEVEN_SEATER_ADDON = 500
 const OUTSTATION_EXTRA_DAY_RATE = 1500
 const EXTRA_KM_RATE = 5
@@ -621,7 +646,6 @@ function BookingPage() {
             {[
               { name: 'name', label: 'Name', type: 'text' },
               { name: 'phone', label: 'Phone', type: 'tel' },
-              { name: 'pickupLocation', label: 'Pickup Location', type: 'text' },
               { name: 'date', label: 'Date', type: 'date' },
             ].map((field) => (
               <label key={field.name} className="text-sm font-semibold text-slate-600">
@@ -637,6 +661,40 @@ function BookingPage() {
                 />
               </label>
             ))}
+            {formData.tripType === 'Self Drive' ? (
+              <label className="sm:col-span-2 text-sm font-semibold text-slate-600">
+                <span className="mb-1 block text-xs font-semibold text-rose-700">
+                  Pickup is available only for the locations listed below.
+                </span>
+                Pickup Location
+                <select
+                  required
+                  name="pickupLocation"
+                  value={formData.pickupLocation}
+                  onChange={onChange}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
+                >
+                  <option value="">Select Pickup Location</option>
+                  {SELF_DRIVE_PICKUP_LOCATIONS.map((location) => (
+                    <option key={location.label} value={location.label}>
+                      {location.label} (Pickup Charge: Rs {location.charge})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <label className="text-sm font-semibold text-slate-600">
+                Pickup Location
+                <input
+                  required
+                  name="pickupLocation"
+                  type="text"
+                  value={formData.pickupLocation}
+                  onChange={onChange}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
+                />
+              </label>
+            )}
 
             <label className="text-sm font-semibold text-slate-600">
               Time
