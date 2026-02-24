@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import mongoose from 'mongoose'
 import { v2 as cloudinary } from 'cloudinary'
+import { Pingram } from 'pingram'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -20,12 +21,12 @@ const __dirname = path.dirname(__filename)
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET
-const WHATSAPP_ALERTS_ENABLED = String(process.env.WHATSAPP_ALERTS_ENABLED || 'false').toLowerCase() === 'true'
-const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || ''
-const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || ''
-const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || ''
-const WHATSAPP_ALERT_TO = process.env.WHATSAPP_ALERT_TO || ''
-const TWILIO_WHATSAPP_CONTENT_SID = process.env.TWILIO_WHATSAPP_CONTENT_SID || ''
+const PINGRAM_SMS_ENABLED = String(process.env.PINGRAM_SMS_ENABLED || 'false').toLowerCase() === 'true'
+const PINGRAM_API_KEY = process.env.PINGRAM_API_KEY || ''
+const PINGRAM_BASE_URL = process.env.PINGRAM_BASE_URL || 'https://api.pingram.io'
+const PINGRAM_EVENT_TYPE = process.env.PINGRAM_EVENT_TYPE || 'you_got_a_new_booking'
+const PINGRAM_TO_ID = process.env.PINGRAM_TO_ID || ''
+const PINGRAM_TO_NUMBER = process.env.PINGRAM_TO_NUMBER || ''
 
 if (!MONGO_URI) {
   // eslint-disable-next-line no-console
@@ -45,18 +46,25 @@ cloudinary.config({
   api_secret: CLOUDINARY_API_SECRET,
 })
 
-function buildBookingWhatsAppMessage(booking) {
+const pingramClient = PINGRAM_API_KEY
+  ? new Pingram({
+    apiKey: PINGRAM_API_KEY,
+    baseUrl: PINGRAM_BASE_URL,
+  })
+  : null
+
+function buildBookingSmsMessage(booking) {
   const lines = [
-    'New Booking Received',
+    'New booking received',
     `ID: ${booking._id}`,
     `Name: ${booking.name || '-'}`,
     `Phone: ${booking.phone || '-'}`,
-    `Trip Type: ${booking.tripType || '-'}`,
+    `Trip: ${booking.tripType || '-'}`,
     `Pickup: ${booking.pickupLocation || '-'}`,
-    `Date: ${booking.date || '-'} ${booking.time || ''}`.trim(),
-    `Car Type: ${booking.carType || '-'}`,
+    `Date/Time: ${booking.date || '-'} ${booking.time || ''}`.trim(),
+    `Car: ${booking.carType || '-'}`,
     `Amount: Rs ${booking.finalAmount ?? '-'}`,
-    `Payment: ${booking.paymentStatus || '-'}`,
+    `Pay: ${booking.paymentStatus || '-'}`,
   ]
 
   if (booking.tripType === 'Self Drive') {
@@ -69,46 +77,23 @@ function buildBookingWhatsAppMessage(booking) {
   return lines.join('\n')
 }
 
-async function sendWhatsAppBookingAlert(booking) {
-  if (!WHATSAPP_ALERTS_ENABLED) return
-  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM || !WHATSAPP_ALERT_TO) {
+async function sendPingramSmsAlert(booking) {
+  if (!PINGRAM_SMS_ENABLED) return
+  if (!PINGRAM_API_KEY || !PINGRAM_TO_NUMBER || !PINGRAM_TO_ID || !pingramClient) {
     // eslint-disable-next-line no-console
-    console.warn('WhatsApp alert skipped: missing Twilio WhatsApp env configuration')
+    console.warn('Pingram SMS skipped: missing Pingram env configuration')
     return
   }
-
-  const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
-  const body = new URLSearchParams()
-  body.set('From', TWILIO_WHATSAPP_FROM)
-  body.set('To', WHATSAPP_ALERT_TO)
-
-  if (TWILIO_WHATSAPP_CONTENT_SID) {
-    body.set('ContentSid', TWILIO_WHATSAPP_CONTENT_SID)
-    body.set(
-      'ContentVariables',
-      JSON.stringify({
-        1: booking.date || '-',
-        2: booking.time || '-',
-      }),
-    )
-  } else {
-    body.set('Body', buildBookingWhatsAppMessage(booking))
-  }
-  const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+  await pingramClient.send({
+    type: PINGRAM_EVENT_TYPE,
+    to: {
+      id: PINGRAM_TO_ID,
+      number: PINGRAM_TO_NUMBER,
     },
-    body: body.toString(),
+    sms: {
+      message: buildBookingSmsMessage(booking),
+    },
   })
-
-  if (!response.ok) {
-    const responseText = await response.text()
-    throw new Error(`Twilio WhatsApp API error ${response.status}: ${responseText}`)
-  }
 }
 
 const allowedOrigins = CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
@@ -372,9 +357,9 @@ app.post('/api/bookings', async (req, res) => {
       })
     }
 
-    sendWhatsAppBookingAlert(booking.toObject()).catch((error) => {
+    sendPingramSmsAlert(booking.toObject()).catch((error) => {
       // eslint-disable-next-line no-console
-      console.error('WhatsApp alert failed:', error.message)
+      console.error('Pingram SMS failed:', error.message)
     })
 
     return res.status(201).json(booking.toObject())
