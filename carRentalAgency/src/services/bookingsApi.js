@@ -33,6 +33,10 @@ export function getBookings() {
   return request('/bookings')
 }
 
+export function getBookingById(bookingId) {
+  return request(`/bookings/${bookingId}`)
+}
+
 export function saveBooking(booking) {
   return request('/bookings', {
     method: 'POST',
