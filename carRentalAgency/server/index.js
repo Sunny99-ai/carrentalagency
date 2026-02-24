@@ -20,6 +20,11 @@ const __dirname = path.dirname(__filename)
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET
+const WHATSAPP_ALERTS_ENABLED = String(process.env.WHATSAPP_ALERTS_ENABLED || 'false').toLowerCase() === 'true'
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || ''
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || ''
+const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || ''
+const WHATSAPP_ALERT_TO = process.env.WHATSAPP_ALERT_TO || ''
 
 if (!MONGO_URI) {
   // eslint-disable-next-line no-console
@@ -38,6 +43,61 @@ cloudinary.config({
   api_key: CLOUDINARY_API_KEY,
   api_secret: CLOUDINARY_API_SECRET,
 })
+
+function buildBookingWhatsAppMessage(booking) {
+  const lines = [
+    'New Booking Received',
+    `ID: ${booking._id}`,
+    `Name: ${booking.name || '-'}`,
+    `Phone: ${booking.phone || '-'}`,
+    `Trip Type: ${booking.tripType || '-'}`,
+    `Pickup: ${booking.pickupLocation || '-'}`,
+    `Date: ${booking.date || '-'} ${booking.time || ''}`.trim(),
+    `Car Type: ${booking.carType || '-'}`,
+    `Amount: Rs ${booking.finalAmount ?? '-'}`,
+    `Payment: ${booking.paymentStatus || '-'}`,
+  ]
+
+  if (booking.tripType === 'Self Drive') {
+    lines.push(`Hours/KM: ${booking.selfDriveHours || '-'} / ${booking.selfDriveKm || '-'}`)
+  } else {
+    lines.push(`Drop: ${booking.dropLocation || '-'}`)
+    lines.push(`KM/Days: ${booking.outstationKm || booking.billedKm || '-'} / ${booking.outstationDays || '-'}`)
+  }
+
+  return lines.join('\n')
+}
+
+async function sendWhatsAppBookingAlert(booking) {
+  if (!WHATSAPP_ALERTS_ENABLED) return
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM || !WHATSAPP_ALERT_TO) {
+    // eslint-disable-next-line no-console
+    console.warn('WhatsApp alert skipped: missing Twilio WhatsApp env configuration')
+    return
+  }
+
+  const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
+  const body = new URLSearchParams({
+    From: TWILIO_WHATSAPP_FROM,
+    To: WHATSAPP_ALERT_TO,
+    Body: buildBookingWhatsAppMessage(booking),
+  })
+  const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  })
+
+  if (!response.ok) {
+    const responseText = await response.text()
+    throw new Error(`Twilio WhatsApp API error ${response.status}: ${responseText}`)
+  }
+}
 
 const allowedOrigins = CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
 if (!allowedOrigins.includes('http://localhost:5173')) allowedOrigins.push('http://localhost:5173')
@@ -299,6 +359,11 @@ app.post('/api/bookings', async (req, res) => {
         paymentScreenshotPublicId: uploadedImage.publicId,
       })
     }
+
+    sendWhatsAppBookingAlert(booking.toObject()).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('WhatsApp alert failed:', error.message)
+    })
 
     return res.status(201).json(booking.toObject())
   } catch (error) {
