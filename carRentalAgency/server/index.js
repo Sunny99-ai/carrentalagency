@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 import express from 'express'
 import mongoose from 'mongoose'
 import { v2 as cloudinary } from 'cloudinary'
-import { Pingram } from 'pingram'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,7 +11,7 @@ dotenv.config({ path: '.env.server.local' })
 dotenv.config()
 
 const app = express()
-const PORT = Number(process.env.PORT || process.env.SERVER_PORT || 4000)
+const PORT = Number(process.env.SERVER_PORT || 4000)
 const MONGO_URI = process.env.MONGODB_URI
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173'
 const __filename = fileURLToPath(import.meta.url)
@@ -21,12 +20,6 @@ const __dirname = path.dirname(__filename)
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET
-const PINGRAM_SMS_ENABLED = String(process.env.PINGRAM_SMS_ENABLED || 'false').toLowerCase() === 'true'
-const PINGRAM_API_KEY = process.env.PINGRAM_API_KEY || ''
-const PINGRAM_BASE_URL = process.env.PINGRAM_BASE_URL || 'https://api.pingram.io'
-const PINGRAM_EVENT_TYPE = process.env.PINGRAM_EVENT_TYPE || 'you_got_a_new_booking'
-const PINGRAM_TO_ID = process.env.PINGRAM_TO_ID || ''
-const PINGRAM_TO_NUMBER = process.env.PINGRAM_TO_NUMBER || ''
 
 if (!MONGO_URI) {
   // eslint-disable-next-line no-console
@@ -46,86 +39,25 @@ cloudinary.config({
   api_secret: CLOUDINARY_API_SECRET,
 })
 
-const pingramClient = PINGRAM_API_KEY
-  ? new Pingram({
-    apiKey: PINGRAM_API_KEY,
-    baseUrl: PINGRAM_BASE_URL,
-  })
-  : null
-
-function buildBookingSmsMessage(booking) {
-  const lines = [
-    'New booking received',
-    `ID: ${booking._id}`,
-    `Name: ${booking.name || '-'}`,
-    `Phone: ${booking.phone || '-'}`,
-    `Trip: ${booking.tripType || '-'}`,
-    `Pickup: ${booking.pickupLocation || '-'}`,
-    `Date/Time: ${booking.date || '-'} ${booking.time || ''}`.trim(),
-    `Car: ${booking.carType || '-'}`,
-    `Amount: Rs ${booking.finalAmount ?? '-'}`,
-    `Pay: ${booking.paymentStatus || '-'}`,
-  ]
-
-  if (booking.tripType === 'Self Drive') {
-    lines.push(`Hours/KM: ${booking.selfDriveHours || '-'} / ${booking.selfDriveKm || '-'}`)
-  } else {
-    lines.push(`Drop: ${booking.dropLocation || '-'}`)
-    lines.push(`KM/Days: ${booking.outstationKm || booking.billedKm || '-'} / ${booking.outstationDays || '-'}`)
-  }
-
-  return lines.join('\n')
-}
-
-async function sendPingramSmsAlert(booking) {
-  if (!PINGRAM_SMS_ENABLED) return
-  if (!PINGRAM_API_KEY || !PINGRAM_TO_NUMBER || !PINGRAM_TO_ID || !pingramClient) {
-    // eslint-disable-next-line no-console
-    console.warn('Pingram SMS skipped: missing Pingram env configuration')
-    return
-  }
-  await pingramClient.send({
-    type: PINGRAM_EVENT_TYPE,
-    to: {
-      id: PINGRAM_TO_ID,
-      number: PINGRAM_TO_NUMBER,
-    },
-    sms: {
-      message: buildBookingSmsMessage(booking),
-    },
-  })
-}
-
 const allowedOrigins = CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
 if (!allowedOrigins.includes('http://localhost:5173')) allowedOrigins.push('http://localhost:5173')
 if (!allowedOrigins.includes('http://localhost:5174')) allowedOrigins.push('http://localhost:5174')
 
 const isLocalhostOrigin = (origin) => /^https?:\/\/localhost:\d+$/.test(origin)
-const isVercelOrigin = (origin) => /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)?\.vercel\.app$/i.test(origin)
-
-const isOriginAllowed = (origin) => {
-  if (!origin) return true
-  if (allowedOrigins.includes(origin)) return true
-  if (isLocalhostOrigin(origin)) return true
-  if (isVercelOrigin(origin)) return true
-  return false
-}
-
-const corsOptions = {
-  origin(origin, callback) {
-    if (isOriginAllowed(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error('CORS origin not allowed'))
-    }
-  },
-  credentials: true,
-}
 
 app.use(
-  cors(corsOptions),
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin) || isLocalhostOrigin(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('CORS origin not allowed'))
+      }
+    },
+    credentials: true,
+  }),
 )
-app.options(/.*/, cors(corsOptions))
+app.options(/.*/, cors())
 app.use(express.json({ limit: '20mb' }))
 
 const bookingSchema = new mongoose.Schema(
@@ -140,17 +72,13 @@ const bookingSchema = new mongoose.Schema(
     carType: { type: String, enum: ['5 Seater', '7 Seater'], required: true },
     acType: { type: String, enum: ['A/C', 'Non A/C'], default: 'A/C' },
     outstationKm: { type: String, default: '' },
-    outstationDays: { type: String, default: '' },
     selfDriveHours: { type: String, default: '' },
     selfDriveKm: { type: String, default: '' },
     finalAmount: { type: Number, default: null },
-    paymentOption: { type: String, enum: ['full', 'advance'], default: 'full' },
-    paidAmount: { type: Number, default: null },
-    remainingAmount: { type: Number, default: null },
     billedKm: { type: Number, default: null },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'under_verification', 'verified', 'failed'],
+      enum: ['pending', 'under_verification', 'verified'],
       default: 'pending',
     },
     paymentScreenshotUrl: { type: String, default: '' },
@@ -167,7 +95,7 @@ const paymentProofSchema = new mongoose.Schema(
     paymentScreenshotPublicId: { type: String, default: '' },
     paymentStatus: {
       type: String,
-      enum: ['under_verification', 'verified', 'failed'],
+      enum: ['under_verification', 'verified'],
       default: 'under_verification',
     },
   },
@@ -209,25 +137,6 @@ async function loadDefaultPricing() {
   }
 }
 
-function withAvailability(pricingData) {
-  const current = pricingData || {}
-  const currentAvailability = current.availability || {}
-
-  return {
-    ...current,
-    availability: {
-      selfDrive: {
-        isAvailable: currentAvailability.selfDrive?.isAvailable ?? true,
-        carsAvailable: currentAvailability.selfDrive?.carsAvailable ?? '',
-      },
-      outstation: {
-        isAvailable: currentAvailability.outstation?.isAvailable ?? true,
-        carsAvailable: currentAvailability.outstation?.carsAvailable ?? '',
-      },
-    },
-  }
-}
-
 app.get('/api/health', (req, res) => {
   res.json({ ok: true })
 })
@@ -247,11 +156,11 @@ app.get('/api/pricing', async (req, res) => {
     if (!pricingDoc) {
       const seeded = await Pricing.create({
         key: 'main',
-        data: withAvailability(await loadDefaultPricing()),
+        data: await loadDefaultPricing(),
       })
       return res.json(seeded.data)
     }
-    return res.json(withAvailability(pricingDoc.data))
+    return res.json(pricingDoc.data)
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch pricing', error: error.message })
   }
@@ -259,7 +168,7 @@ app.get('/api/pricing', async (req, res) => {
 
 app.put('/api/pricing', async (req, res) => {
   try {
-    const nextPricing = withAvailability(req.body)
+    const nextPricing = req.body
     if (!nextPricing?.selfDrive || !nextPricing?.outstation) {
       return res.status(400).json({ message: 'Invalid pricing payload' })
     }
@@ -286,42 +195,6 @@ app.get('/api/bookings/:id', async (req, res) => {
     return res.json(booking)
   } catch (error) {
     return res.status(500).json({ message: 'Server error' })
-  }
-})
-
-app.patch('/api/bookings/:id/payment-status', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { paymentStatus } = req.body
-    const allowedStatus = ['verified', 'failed']
-
-    if (!isValidObjectId(id)) {
-      return res.status(400).json({ message: 'Invalid booking ID' })
-    }
-
-    if (!allowedStatus.includes(paymentStatus)) {
-      return res.status(400).json({ message: 'Invalid payment status' })
-    }
-
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      id,
-      { paymentStatus },
-      { new: true },
-    ).lean()
-
-    if (!updatedBooking) {
-      return res.status(404).json({ message: 'Booking not found' })
-    }
-
-    await PaymentProof.findOneAndUpdate(
-      { bookingId: String(id) },
-      { paymentStatus },
-      { sort: { createdAt: -1 } },
-    )
-
-    return res.json(updatedBooking)
-  } catch (error) {
-    return res.status(500).json({ message: 'Failed to update payment status', error: error.message })
   }
 })
 
@@ -357,12 +230,10 @@ app.post('/api/bookings', async (req, res) => {
       })
     }
 
-    sendPingramSmsAlert(booking.toObject()).catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error('Pingram SMS failed:', error.message)
+    return res.status(201).json({
+      success: true,
+      booking: booking.toObject(),
     })
-
-    return res.status(201).json(booking.toObject())
   } catch (error) {
     return res.status(400).json({
       message: 'Failed to save booking',
@@ -420,7 +291,7 @@ async function start() {
     if (!pricingDoc) {
       await Pricing.create({
         key: 'main',
-        data: withAvailability(await loadDefaultPricing()),
+        data: await loadDefaultPricing(),
       })
     }
     app.listen(PORT, () => {
