@@ -7,6 +7,7 @@ import upiQrImage from '../assets/6114191099447413884.jpg'
 
 const UPI_ID = '9533732579@upi'
 const SAFER_UPI_LIMIT = 2000
+const OWNER_WHATSAPP_NUMBER = '9533732579'
 
 const SELF_DRIVE_TERMS = [
   'I am above 21 years old and hold a valid driving license.',
@@ -38,6 +39,7 @@ function PaymentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [paymentUploadMessage, setPaymentUploadMessage] = useState('')
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [savedBookingForNotify, setSavedBookingForNotify] = useState(null)
   const [upiCopied, setUpiCopied] = useState(false)
   const areSelfDriveTermsAccepted = !isSelfDrive || selfDriveTermsAccepted.every(Boolean)
 
@@ -109,15 +111,47 @@ function PaymentPage() {
         setCookie('latestBookingId', String(bookingId))
         setCookie(`bookingNotificationShown_${bookingId}`, 'false')
       }
+      setSavedBookingForNotify(savedBooking)
       setPaymentUploadMessage('Booking and payment screenshot submitted. We will verify and confirm you by contact.')
       setSelectedPaymentFile(null)
       setShowSuccessPopup(true)
-      setTimeout(() => navigate('/'), 1800)
     } catch (error) {
       setPaymentUploadMessage(error.message || 'Failed to upload screenshot. Try a smaller image.')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const onNotifyOwner = () => {
+    const booking = savedBookingForNotify || bookingPayload
+    if (!booking) return
+
+    const message = [
+      'Hello Owner, payment submitted for a booking.',
+      `Name: ${booking.name || '-'}`,
+      `Phone: ${booking.phone || '-'}`,
+      `Trip Type: ${booking.tripType || '-'}`,
+      `Pickup: ${booking.pickupLocation || '-'}`,
+      `Drop: ${booking.dropLocation || '-'}`,
+      `Date: ${booking.date || '-'}`,
+      `Time: ${booking.time || '-'}`,
+      `Amount Paid: Rs ${amountToPay || 0}`,
+      `Total Amount: Rs ${totalAmount || 0}`,
+      `Booking ID: ${booking._id || booking.id || '-'}`,
+    ].join('\n')
+
+    const waLink = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
+    const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
+    if (isMobile) {
+      window.location.href = waLink
+      return
+    }
+    window.open(waLink, '_blank', 'noopener,noreferrer')
+  }
+
+  const onCloseSuccessPopup = () => {
+    setShowSuccessPopup(false)
+    navigate('/')
   }
 
   const onCopyUpiId = async () => {
@@ -271,6 +305,22 @@ function PaymentPage() {
             <p className="mt-4 text-base font-semibold text-ink">
               Success we will verify payment and inform you shortly
             </p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={onNotifyOwner}
+                className="w-full rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                Notify Owner
+              </button>
+              <button
+                type="button"
+                onClick={onCloseSuccessPopup}
+                className="w-full rounded-full border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
