@@ -6,6 +6,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 
 dotenv.config({ path: '.env.server.local' })
 dotenv.config()
@@ -145,7 +146,7 @@ app.get('/api/bookings', async (req, res) => {
   try {
     const bookings = await Booking.find().sort({ createdAt: -1 }).lean()
     res.json(bookings)
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: 'Failed to fetch bookings' })
   }
 })
@@ -230,10 +231,7 @@ app.post('/api/bookings', async (req, res) => {
       })
     }
 
-    return res.status(201).json({
-      success: true,
-      booking: booking.toObject(),
-    })
+    return res.status(201).json(booking.toObject())
   } catch (error) {
     return res.status(400).json({
       message: 'Failed to save booking',
