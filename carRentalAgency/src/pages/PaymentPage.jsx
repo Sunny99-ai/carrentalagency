@@ -2,41 +2,7 @@ import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import SectionHeader from '../components/SectionHeader'
 import Seo from '../components/Seo'
-import SuccessPopup from '../components/SuccessPopup'
 import { saveBooking } from '../services/bookingsApi'
-
-const ownerWhatsappNumber = (import.meta.env.VITE_OWNER_WHATSAPP_NUMBER || '9533732579').replace(/\D/g, '')
-
-const isMobileDevice = () => /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
-
-const buildWhatsAppBookingMessage = (booking) => {
-  if (!booking) return ''
-
-  const lines = [
-    'Hello Owner, new booking payment has been submitted.',
-    `Booking ID: ${booking._id || '-'}`,
-    `Name: ${booking.name || '-'}`,
-    `Phone: ${booking.phone || '-'}`,
-    `Trip Type: ${booking.tripType || '-'}`,
-    `Pickup: ${booking.pickupLocation || '-'}`,
-    `Drop: ${booking.dropLocation || '-'}`,
-    `Date: ${booking.date || '-'}`,
-    `Time: ${booking.time || '-'}`,
-    `Car Type: ${booking.carType || '-'}`,
-    `Amount: ${booking.finalAmount ? `Rs ${booking.finalAmount}` : '-'}`,
-    `Payment Status: ${booking.paymentStatus || 'under_verification'}`,
-  ]
-
-  if (booking.tripType === 'Self Drive') {
-    lines.push(`Self Drive Hours: ${booking.selfDriveHours || '-'}`)
-    lines.push(`Self Drive KM: ${booking.selfDriveKm || '-'}`)
-  } else {
-    lines.push(`Outstation KM: ${booking.outstationKm || booking.billedKm || '-'}`)
-    lines.push(`A/C Type: ${booking.acType || '-'}`)
-  }
-
-  return lines.join('\n')
-}
 
 function PaymentPage() {
   const location = useLocation()
@@ -46,8 +12,6 @@ function PaymentPage() {
   const [selectedPaymentFile, setSelectedPaymentFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [paymentUploadMessage, setPaymentUploadMessage] = useState('')
-  const [isSuccessPopupOpen, setIsSuccessPopupOpen] = useState(false)
-  const [savedBooking, setSavedBooking] = useState(null)
 
   const onPaymentFileChange = (event) => {
     const file = event.target.files?.[0] || null
@@ -99,48 +63,21 @@ function PaymentPage() {
     try {
       const rawDataUrl = await readFileAsDataUrl(selectedPaymentFile)
       const optimizedDataUrl = await optimizeImageDataUrl(rawDataUrl)
-      const response = await saveBooking({
+      await saveBooking({
         ...bookingPayload,
         paymentScreenshotDataUrl: optimizedDataUrl,
         paymentStatus: 'under_verification',
         paymentScreenshotUploadedAt: new Date().toISOString(),
       })
-
-      if (!response?.success || !response?.booking) {
-        throw new Error('Booking save response is invalid. Please try again.')
-      }
-
-      setSavedBooking(response.booking)
-      setIsSuccessPopupOpen(true)
       setPaymentUploadMessage('Booking and payment screenshot submitted. We will verify and confirm you by contact.')
       setSelectedPaymentFile(null)
+      window.alert('Payment screenshot uploaded successfully.')
+      navigate('/')
     } catch (error) {
       setPaymentUploadMessage(error.message || 'Failed to upload screenshot. Try a smaller image.')
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  const handleNotifyOwner = () => {
-    if (!savedBooking) return
-    if (!ownerWhatsappNumber) {
-      setPaymentUploadMessage('Owner WhatsApp number is not configured.')
-      return
-    }
-
-    const encodedMessage = encodeURIComponent(buildWhatsAppBookingMessage(savedBooking))
-    const link = `https://wa.me/${ownerWhatsappNumber}?text=${encodedMessage}`
-
-    if (isMobileDevice()) {
-      window.location.href = link
-      return
-    }
-    window.open(link, '_blank', 'noopener,noreferrer')
-  }
-
-  const closeSuccessPopup = () => {
-    setIsSuccessPopupOpen(false)
-    navigate('/')
   }
 
   if (!bookingPayload) {
@@ -162,7 +99,6 @@ function PaymentPage() {
   return (
     <section className="px-4 pb-20 sm:px-6 lg:px-8">
       <Seo title="Payment | SSRK TRAVELS AND SELF DRIVE CARS" />
-      <SuccessPopup open={isSuccessPopupOpen} booking={savedBooking} onNotifyOwner={handleNotifyOwner} onClose={closeSuccessPopup} />
       <div className="mx-auto max-w-3xl">
         <SectionHeader
           overline="Payment"
@@ -184,7 +120,9 @@ function PaymentPage() {
                 <p className="mt-1 text-sm text-slate-700">KM: {bookingPayload.outstationKm || bookingPayload.billedKm || '-'}</p>
               </>
             )}
-            <p className="mt-3 text-sm font-semibold text-slate-700">Waiting charges and toll gate charges are applicable.</p>
+            <p className="mt-3 text-sm font-semibold text-slate-700">
+              Waiting charges and toll gate charges are applicable.
+            </p>
           </div>
 
           {amount ? <p className="mt-4 text-lg font-semibold text-ink">Amount to pay: Rs {amount}</p> : null}
