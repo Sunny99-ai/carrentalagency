@@ -43,6 +43,17 @@ function PaymentScreenshotCell({ url }) {
   )
 }
 
+const ACCEPT_MESSAGE = 'Your booking has confirmed, We will contact you shortly'
+const CANCEL_MESSAGE =
+  'sorry due to some reasons we have cancelled your booking, we will work on your refund if you really made payment. Call us for more information'
+
+function toWhatsAppNumber(phone) {
+  const digits = String(phone || '').replace(/\D/g, '')
+  if (!digits) return ''
+  if (digits.length === 10) return `91${digits}`
+  return digits
+}
+
 export default function App() {
   const [bookings, setBookings] = useState([])
   const [pricing, setPricing] = useState(null)
@@ -130,7 +141,40 @@ export default function App() {
       setMessage(`Payment status updated to ${paymentStatus}.`)
     } catch (err) {
       setMessage(err.message)
+      throw err
     }
+  }
+
+  const openWhatsAppForBooking = (phone, text) => {
+    const whatsappNumber = toWhatsAppNumber(phone)
+    if (!whatsappNumber) {
+      setMessage('Phone number is missing for this booking.')
+      return
+    }
+
+    const link = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`
+    const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
+
+    if (isMobile) {
+      window.location.href = link
+      return
+    }
+    window.open(link, '_blank', 'noopener,noreferrer')
+  }
+
+  const onBookingDecision = async (item, decision) => {
+    const bookingId = item._id || item.id
+    const isAccept = decision === 'accept'
+    const paymentStatus = isAccept ? 'verified' : 'failed'
+    const notifyMessage = isAccept ? ACCEPT_MESSAGE : CANCEL_MESSAGE
+
+    try {
+      await updatePaymentStatus(bookingId, paymentStatus)
+    } catch {
+      // Keep WhatsApp flow available even if status update fails.
+    }
+
+    openWhatsAppForBooking(item.phone, notifyMessage)
   }
 
   return (
@@ -194,10 +238,10 @@ export default function App() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 8 }}>
-                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'verified')}>
-                            Verify
+                          <button type="button" onClick={() => onBookingDecision(item, 'accept')}>
+                            Accept
                           </button>
-                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'failed')}>
+                          <button type="button" onClick={() => onBookingDecision(item, 'cancel')}>
                             Cancel
                           </button>
                         </div>
@@ -247,10 +291,10 @@ export default function App() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 8 }}>
-                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'verified')}>
-                            Verify
+                          <button type="button" onClick={() => onBookingDecision(item, 'accept')}>
+                            Accept
                           </button>
-                          <button type="button" onClick={() => updatePaymentStatus(item._id || item.id, 'failed')}>
+                          <button type="button" onClick={() => onBookingDecision(item, 'cancel')}>
                             Cancel
                           </button>
                         </div>
@@ -646,4 +690,3 @@ export default function App() {
     </div>
   )
 }
-
