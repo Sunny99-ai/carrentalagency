@@ -25,6 +25,7 @@ const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || ''
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || ''
 const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || ''
 const WHATSAPP_ALERT_TO = process.env.WHATSAPP_ALERT_TO || ''
+const TWILIO_WHATSAPP_CONTENT_SID = process.env.TWILIO_WHATSAPP_CONTENT_SID || ''
 
 if (!MONGO_URI) {
   // eslint-disable-next-line no-console
@@ -77,11 +78,22 @@ async function sendWhatsAppBookingAlert(booking) {
   }
 
   const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
-  const body = new URLSearchParams({
-    From: TWILIO_WHATSAPP_FROM,
-    To: WHATSAPP_ALERT_TO,
-    Body: buildBookingWhatsAppMessage(booking),
-  })
+  const body = new URLSearchParams()
+  body.set('From', TWILIO_WHATSAPP_FROM)
+  body.set('To', WHATSAPP_ALERT_TO)
+
+  if (TWILIO_WHATSAPP_CONTENT_SID) {
+    body.set('ContentSid', TWILIO_WHATSAPP_CONTENT_SID)
+    body.set(
+      'ContentVariables',
+      JSON.stringify({
+        1: booking.date || '-',
+        2: booking.time || '-',
+      }),
+    )
+  } else {
+    body.set('Body', buildBookingWhatsAppMessage(booking))
+  }
   const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')
 
   const response = await fetch(endpoint, {
